@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 
 export function Header() {
 
-
   return (
     <motion.header
       initial={{ y: -100 }}
