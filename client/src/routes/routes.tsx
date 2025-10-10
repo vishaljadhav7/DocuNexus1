@@ -1,5 +1,5 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HeroSection, SignIn, SignUp  } from "@/app-components/index";
+import { HeroSection, SignIn, SignUp, ProtectedRoute, RedirectRoute} from "@/app-components/index";
 import { Layout, Home } from "@/Pages/index";
 import { RouterProvider } from "react-router-dom";
 
@@ -11,21 +11,21 @@ export const AppRoutes = () => {
             children : [
                 {
                     path : "/",
-                    element : <HeroSection/>
+                    element : <RedirectRoute><HeroSection/></RedirectRoute>
                 },
                 {
                     path : "/home",
-                    element : <Home/> // protected
+                    element : <ProtectedRoute> <Home/> </ProtectedRoute>  
                 }
             ]
         },
         {
             path : "/sign-up",
-            element : <SignUp/>
+            element : <RedirectRoute> <SignUp/> </RedirectRoute>
         },
         {
             path : "/sign-in",
-            element : <SignIn/>
+            element : <RedirectRoute><SignIn/></RedirectRoute>
         }
     ])
     
