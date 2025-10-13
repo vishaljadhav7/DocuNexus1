@@ -41,3 +41,43 @@ class UserExistsError(HTTPException):
     """User already exists exception"""
     def __init__(self, detail: str = "User already exists"):
         super().__init__(status_code=status.HTTP_409_CONFLICT, detail=detail)       
+        
+class RAGException(HTTPException):
+    """Base RAG exception"""
+    def __init__(self, detail: str, status_code: int = status.HTTP_500_INTERNAL_SERVER_ERROR):
+        super().__init__(status_code=status_code, detail=detail)
+        
+class DocumentProcessingError(HTTPException):
+    """Document processing error"""
+    def __init__(self, detail: str):
+        super().__init__(detail=detail, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY)
+
+
+class FileUploadError(HTTPException):
+    """File upload error"""
+    def __init__(self, detail: str):
+        super().__init__(detail=detail, status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE)
+
+
+class DocumentNotFoundError(HTTPException):
+    """Document not found error"""
+    def __init__(self, document_id: str):
+        super().__init__(
+            detail=f"Document {document_id} not found",
+            status_code=status.HTTP_404_NOT_FOUND
+        )
+
+
+class VectorStoreError(RAGException):
+    """Vector store operation error"""
+    def __init__(self, detail: str):
+        super().__init__(detail=f"Vector store error: {detail}")
+
+
+class EmbeddingError(RAGException):
+    """Embedding generation error"""
+    def __init__(self, detail: str):
+        super().__init__(detail=f"Embedding error: {detail}")                
+        
+        
+        

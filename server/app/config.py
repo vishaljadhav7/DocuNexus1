@@ -11,6 +11,25 @@ class Settings(BaseSettings):
     redis_url : str
     redis_prefix:str
     
+    cloudinary_cloud_name: str
+    cloudinary_api_key: str
+    cloudinary_api_secret: str
+    
+    chunk_size:int 
+    chunk_overlap:int
+    
+    gemini_api_key : str
+    gemini_model : str = "gemini-2.5-flash"
+    gemini_embedding_model: str = "models/text-embedding-004"
+    
+    pinecone_api_key : str
+    pinecone_index_name : str
+    pinecone_environment : str
+    
+    redis_prefix_celery : str
+    celery_broker_url : str
+    celery_result_backend : str
+    
     model_config = SettingsConfigDict(env_file=".env")
 
 

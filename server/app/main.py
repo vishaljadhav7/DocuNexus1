@@ -6,6 +6,8 @@ from app.redis_client import redis_client
 from app.config import Settings
 from app.api.v1.auth import router
 from app.middleware.auth import AuthMiddleware
+from app.api.v1.document import document_router
+from app.services.pinecone_service import PineconeService
 
 settings = Settings()
 
@@ -29,6 +31,13 @@ async def lifespan(app: FastAPI):
         print("Redis connected successfully")
         
         
+        # 3. Pinecone - manual lifecycle management
+        pinecone_service = PineconeService()
+        await pinecone_service.connect()
+        app.state.pinecone_service = pinecone_service
+        print("Pinecone connected successfully")
+        
+        
         print("All services initialized successfully")
         
     except Exception as e:
@@ -43,6 +52,14 @@ async def lifespan(app: FastAPI):
     # Shutdown phase - cleanup in reverse order
     print("Shutting down...")
 
+    try:
+        # 3. Pinecone (last in, first out)
+        if hasattr(app.state, 'pinecone_service'):
+            await app.state.pinecone_service.disconnect()
+            print("Pinecone disconnected successfully")
+    except Exception as e:
+        print(f"Error disconnecting Pinecone: {str(e)}")
+    
     try:
         # 2. Redis
         await redis_client.disconnect()
@@ -72,7 +89,7 @@ app.add_middleware(
 
 app.add_middleware(
     AuthMiddleware,
-    protected_paths=["/api/v1/me", "/api/v1/sign_out"]
+    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/document"]
 )
 
 
@@ -87,7 +104,10 @@ async def root():
     }
     
     
-app.include_router(router)    
+routers_to_include = [router, document_router]     
+
+for routes in routers_to_include:
+    app.include_router(routes)     
 
 if __name__ == "__main__": 
     import uvicorn

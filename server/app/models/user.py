@@ -50,3 +50,8 @@ class User(Base):
         init=False
     )
     
+    my_docs: Mapped[List["Document"]] = relationship(
+        "Document",
+        back_populates="user"
+    )
+    
