@@ -25,7 +25,7 @@ class TokenResponse(BaseModel):
 
 class TokenData(BaseModel):
     """Token payload data"""
-    sub: str  # user_id 
+    sub: str  # user_id         
     exp: int
     iat: int
     type: str  # "access" or "refresh"

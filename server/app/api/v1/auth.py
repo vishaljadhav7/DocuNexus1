@@ -2,8 +2,8 @@ from fastapi import APIRouter, Request, Response, status, HTTPException
 import logging
 from app.database import AsyncSessionDep
 from app.api.dependencies import CurrentUserDep
-from app.schemas.user import UserCreate, UserResponse
-from app.schemas.auth import SignInRequest, TokenResponse, MessageResponse
+from app.schemas.user import UserCreate, UserResponse, UserSignInResponse
+from app.schemas.auth import SignInRequest, MessageResponse
 from app.services.auth import auth_service
 from app.core.security import security_service 
 from app.core.exceptions import InvalidTokenError
@@ -31,7 +31,7 @@ async def sign_up(
 
 @router.post(
     "/sign_in",
-    response_model=TokenResponse,
+    response_model=UserSignInResponse,
     summary="Sign in user"
 )
 async def sign_in(
@@ -58,7 +58,11 @@ async def sign_in(
         )
         
         logger.info(f"User {user.id} signed in successfully")
-        return TokenResponse(
+        return UserSignInResponse(
+            id=user.id,
+            username=user.username,
+            email=user.email,
+            created_at=user.created_at,
             access_token=access_token,
             expires_in=expires_in
         )

@@ -5,10 +5,11 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 export interface IUser {
   id: string;
   email: string;
-  userName: string | null;
-  profileUrl? : string;
-  createdAt: Date;
+  username: string;
+  profile_url? : string;
+  created_at: Date;
   credits : number;
+  access_token : string;
 //myDocs? : []
 }
 

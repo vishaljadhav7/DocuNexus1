@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app-store/hooks";
 import { HeroSection } from "./index";
-import { Home } from "@/Pages";
+import { Dashboard } from "@/Pages";
 import type React from "react";
 
 
@@ -18,7 +18,7 @@ export const RedirectRoute = ({children} : { children : React.ReactNode}) => {
     const user = useAppSelector(store => store.user);
   return (
      <>
-      {user.isAuthenticated ? <Home/> : children }
+      {user.isAuthenticated ? <Dashboard/> : children }
      </>
   )
 }

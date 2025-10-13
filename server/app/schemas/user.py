@@ -1,5 +1,7 @@
+from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, EmailStr, Field
+from .auth import TokenResponse
 
 class UserBase(BaseModel):
     email : EmailStr
@@ -16,13 +18,20 @@ class UserCreate(UserBase):
                 "username": "johndoe",
                 "password": "SecurePass123!"
             }
-        }
+        }        
     )
+    
+class UserSignInResponse(UserBase, TokenResponse):
+    id : str
+    created_at: datetime
+
+    
+    model_config = ConfigDict(from_attributes=True)
     
 class UserResponse(UserBase):
     id : str
     created_at: datetime
-    updated_at: datetime
+    updated_at: Optional[datetime]
     
     model_config = ConfigDict(from_attributes=True)
     
