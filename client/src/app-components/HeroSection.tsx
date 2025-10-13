@@ -17,7 +17,7 @@ import {
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button"
 import { Link } from "react-router-dom";
-import {  Footer } from "./index";
+import { Header, Footer } from "./index";
 
 
 export const HeroSection = () => {
@@ -64,6 +64,8 @@ export const HeroSection = () => {
   const companies = ["Notion", "Dribble", "Dropbox"];
 
   return (
+    <>
+    <Header/>
     <div className="min-h-screen bg-gray-50 font-sans ">
       <main>
         {/* Hero Section */}
@@ -472,5 +474,6 @@ export const HeroSection = () => {
         <Footer/>
       </main>
     </div>
+    </>
   );
 }
