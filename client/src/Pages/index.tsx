@@ -1,7 +1,7 @@
-import { Layout } from "./Layout";
-import { Dashboard } from "./Dashboard";
-import { SignIn } from "./SignIn";
-import { SignUp } from "./SignUp";
+import { Layout } from "./layout";
+import { Dashboard } from "./dashboard";
+import { SignIn } from "./sign-in";
+import { SignUp } from "./sign-up";
 
 export {
     Layout,

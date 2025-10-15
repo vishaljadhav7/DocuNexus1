@@ -76,12 +76,14 @@ class Document(Base):
     chunks: Mapped[List["DocumentChunk"]] = relationship(
         "DocumentChunk",
         back_populates="document",
-        init=False
+        init=False,
+        lazy="noload" 
     )
     user: Mapped["User"] = relationship(
         "User",
         back_populates="my_docs",
-        init=False
+        init=False,
+        lazy="noload" 
     )
 
 

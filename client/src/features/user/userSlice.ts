@@ -1,7 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
-
 export interface IUser {
   id: string;
   email: string;
@@ -20,7 +19,7 @@ export interface userStatus{
 
 const initialState : userStatus = {
     userInfo : null,
-    isAuthenticated : false
+    isAuthenticated : true
 }
  
  const userSlice = createSlice({

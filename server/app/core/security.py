@@ -79,7 +79,7 @@ class SecurityService:
                     raise InvalidTokenError(f"Missing required field: {field}")
             
             return payload
-        except jwt.InvalidTokenError as e:
+        except InvalidTokenError as e:
             print(f"Invalid token error: {str(e)}")
             raise InvalidTokenError(f"Invalid token: {str(e)}")
         

@@ -42,7 +42,7 @@ export const SignIn = () => {
     try {
       signInSchema.parse(data);
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/v1/sign_in`,  
+        `${import.meta.env.VITE_API_URL}/sign_in`,  
         data,
         {
           withCredentials: true,
@@ -53,7 +53,6 @@ export const SignIn = () => {
       );
 
       if (response) {
-        console.log("data sign in => ", response)
         dispatch(addUser(response.data));
         router("/dashboard");
       } else {

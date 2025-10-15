@@ -47,7 +47,7 @@ export const SignUp = () => {
       signUpSchema.parse(data);
       
       const response = await axios.post(
-         `${import.meta.env.VITE_API_URL}/api/v1/sign_up`,
+         `${import.meta.env.VITE_API_URL}/sign_up`,
         data,
         {
           withCredentials: true,

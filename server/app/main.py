@@ -89,9 +89,9 @@ app.add_middleware(
 
 app.add_middleware(
     AuthMiddleware,
-    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/document"]
+    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/documents"]
 )
-
+   
 
 
 @app.get("/", tags=["Root"])

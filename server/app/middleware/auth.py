@@ -28,8 +28,8 @@ class AuthMiddleware(BaseHTTPMiddleware):
             token = security_service.extract_token_from_header(authorization)
 
             user_id, jti = await auth_service.validate_access_token(token)
-
-            request.state.user = user_id
+            
+            request.state.user_id = user_id
             request.state.jti = jti
 
             return await call_next(request)

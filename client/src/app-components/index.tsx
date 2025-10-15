@@ -1,7 +1,7 @@
-import { Footer } from "./Footer";
-import { Header } from "./Header";
-import { HeroSection } from "./HeroSection";
-import {ProtectedRoute, RedirectRoute} from './RedirectRoutes'
+import { Footer } from "./footer";
+import { Header } from "./header";
+import { HeroSection } from "./hero-section";
+import {ProtectedRoute, RedirectRoute} from './redirect-routes'
 import { AppSidebar } from "./app-sidebar";
 
 export {

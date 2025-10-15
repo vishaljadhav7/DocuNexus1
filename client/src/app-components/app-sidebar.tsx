@@ -5,8 +5,8 @@ import {
   CreditCard,
   ChevronUp,
   User2,
-  // Loader2,
-  // Plus,
+  Loader2,
+  Plus,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -27,8 +27,8 @@ import {
   SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
-// import { cn } from "@/lib/utils";
-// import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { useAppDispatch, useAppSelector } from "@/app-store/hooks";
 import { removeUser } from "@/features/user/userSlice";
 // useFetchProjectsQuery
@@ -60,8 +60,8 @@ export const AppSidebar = () => {
   const userInfo = useAppSelector((store) => store.user.userInfo);
   const { open } = useSidebar();
   // const {data : projects, isLoading} = useFetchAllProjectsQuery();
-  // const projects = [];
-  // const isLoading = false;
+  const projects = [];
+  const isLoading = false;
 
   const handleLogout = async () => {
     try {
@@ -118,7 +118,7 @@ export const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* <SidebarGroup>
+         <SidebarGroup>
           <SidebarGroupLabel>Projects</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -158,7 +158,7 @@ export const AppSidebar = () => {
               {open && "Create Project"}
             </Button>
           </SidebarGroupContent>
-        </SidebarGroup> */}
+        </SidebarGroup> 
 
         <SidebarFooter className="mb-2 relative">
           <SidebarMenu>

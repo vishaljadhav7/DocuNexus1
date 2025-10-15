@@ -4,13 +4,14 @@ from app.config import Settings
 from app.services.cloudinary_service import CloudinaryService
 from pathlib import Path
 from app.core.exceptions import FileUploadError, DocumentProcessingError
-from app.models.document import Document, ProcessingStatus
+from app.models.document import Document
 from app.tasks.document_tasks import process_document_task
+from app.schemas.document import DocumentUploadResponse
+from app.models.document import ProcessingStatus
 
 import logging
 
 logger = logging.getLogger(__name__)
-
 
 class DocumentProcessor:
     """Main document processing orchestrator"""
@@ -24,17 +25,16 @@ class DocumentProcessor:
         if not file.filename:
             raise FileUploadError("No filename provided")
         
-        # Check file extension
+    
         file_ext = Path(file.filename).suffix.lower()
         if file_ext not in ['.pdf']:
             raise FileUploadError(
                 f"Unsupported file type: {file_ext}. "
-                # f"Supported types: {', '.join(self.settings.allowed_file_types)}"
             )
         
-        # Check file size (if available)
+        # Check file size
         if hasattr(file, 'size') and file.size and file.size > 1024 * 1024 * 1:
-            # max_size_mb = self.settings.max_file_size / (1024 * 1024)
+
             raise FileUploadError(f"File too large. Maximum size: {1024 * 1024 * 1}MB")
     
     async def process_document(
@@ -42,7 +42,6 @@ class DocumentProcessor:
         file: UploadFile,
         user: dict,
         db: AsyncSession
-        # pinecone_service : PineconeService
     ) -> Document:
         """Process uploaded document"""
         
@@ -55,7 +54,7 @@ class DocumentProcessor:
             
             # Validate actual file size
             if len(file_content) > 1024 * 1024 * 2:
-                # max_size_mb = self.settings.max_file_size / (1024 * 1024)
+
                 raise FileUploadError(f"File too large. Maximum size: {1024 * 1024 * 2}MB")
             
             logger.info(f"Processing document upload: {file.filename} ({len(file_content)} bytes)")
@@ -78,25 +77,28 @@ class DocumentProcessor:
             db.add(document)
             await db.commit()
             await db.refresh(document)
-            
-            # Get ID AFTER commit and refresh
+        
             document_id = document.id
             
             logger.info(f"Document ID: {document_id}")
                         
-            logger.info(f"Before process_document_task.delay: {document_id}")
             task = process_document_task.delay(str(document_id))
             
-            return {
-                "document_id": document_id,
-                "filename": document.filename,
-                "cloudinary_url": document.cloudinary_url,
-                "status": ProcessingStatus.PROCESSING.value,
-                "task_id": task.id,
-                "message": "Document uploaded successfully. Processing in background."
-            }
+            return DocumentUploadResponse(
+                document_id=document_id,
+                filename=document.filename,
+                cloudinary_url=document.cloudinary_url,
+                processing_status= ProcessingStatus.PROCESSING.value,
+                created_at=document.created_at,
+                message = "Document uploaded successfully. Processing in background."
+            )
         except FileUploadError:
             raise 
         except Exception as e:
             logger.error(f"Document processing failed: {str(e)}")
             raise DocumentProcessingError(f"Failed to process document: {str(e)}")
+        
+        
+        
+        
+        

@@ -52,6 +52,7 @@ class User(Base):
     
     my_docs: Mapped[List["Document"]] = relationship(
         "Document",
-        back_populates="user"
+        back_populates="user",
+        lazy="noload" 
     )
     
