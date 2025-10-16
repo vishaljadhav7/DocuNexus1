@@ -16,6 +16,10 @@ export const AppRoutes = () => {
                 {
                     path : "/dashboard",
                     element : <ProtectedRoute> <Dashboard/> </ProtectedRoute>  
+                },
+                {
+                    path : "/document/:document_id",
+                    element : <></>
                 }
             ]
         },

@@ -5,7 +5,7 @@ from app.services.document_service import DocumentService
 from app.api.dependencies import CurrentUserDep
 from fastapi import HTTPException
 from app.models.document import ProcessingStatus
-from app.schemas.document import DocumentListResponse, DocumentUploadResponse, DocumentStatusResponse
+from app.schemas.document import DocumentListResponse, DocumentUploadResponse, DocumentStatusResponse, DocumentListItem, DocumentDeleteResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -59,6 +59,21 @@ async def get_document_status(
         error_message = document.error_message if document.processing_status == ProcessingStatus.FAILED.value else None
     )
 
+
+@document_router.get(
+    "/{document_id}",
+    response_model=DocumentListItem,
+    status_code=status.HTTP_200_OK,
+    summary="Fetch user document."
+    )
+async def delete_document(
+    document_id: str,
+    user: CurrentUserDep = None, 
+    db: AsyncSessionDep = None 
+):
+    
+    document = await document_service.get_user_document(user_id=user.id, document_id=document_id, db=db)
+    return document
     
 
 @document_router.get(
@@ -83,19 +98,21 @@ async def get_documents(
     
     
 @document_router.delete(
-    "/{document_id}"
-    
+    "/{document_id}",
+    response_model=DocumentDeleteResponse
     )
 async def delete_document(
     document_id: str,
     user: CurrentUserDep = None, 
     db: AsyncSessionDep = None 
 ):
-    try:
-        await document_service.delete_user_document(
-        user_id=user.id,
-        document_id=document_id,
-        db=db
+    
+    await document_service.delete_user_document(
+    user_id=user.id,
+    document_id=document_id,
+    db=db)
+    
+    return DocumentDeleteResponse(
+        message=f"Document {document_id} deleted successfully",
+        document_id=document_id
     )
-    except Exception:
-        raise HTTPException(status_code=500, detail="Database error occurred")    

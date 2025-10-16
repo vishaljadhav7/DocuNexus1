@@ -6,6 +6,8 @@ import { UploadCloud, FileUp,  Info, AlertCircle, CheckCircle2, Loader2, X } fro
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
+import { useUploadDocumentMutation } from "@/features/documents/api"
+import { useNavigate } from "react-router-dom"
 
 type SelectedMeta = {
   name: string
@@ -26,6 +28,8 @@ export function FileUploadCard() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [uploadDocument] = useUploadDocumentMutation();
+  const router = useNavigate()
 
   const acceptAttr = useMemo(() => ACCEPTED_TYPES.join(","), [])
 
@@ -106,7 +110,9 @@ export function FileUploadCard() {
     setLoading(true)
     setProgress(0)
 
-    // Demo progress animation
+    const formData = new FormData();
+    formData.append('doc_file', file);
+
     const interval = setInterval(() => {
       setProgress((p) => {
         const next = Math.min(p + Math.random() * 20, 95)
@@ -115,15 +121,13 @@ export function FileUploadCard() {
     }, 300)
 
     try {
-      // TODO: Replace this block with your API call
-      // Example shape:
-      // const res = await uploadFile(file)
-      // -> returns { id, metadata } then redirect using that data
-      await new Promise((resolve) => setTimeout(resolve, 1800))
 
+      const file_res = await uploadDocument(formData).unwrap();
       setProgress(100)
-      // You can read meta here and navigate afterwards
-      // e.g., router.push(`/media/${returned.id}`)
+      console.log("file_res =>>>>>> ", file_res)
+      
+      // router(`/document/${file_res.document_id}`)
+      
     } catch (e: any) {
       setError(e?.message || "Upload failed. Please try again.")
     } finally {

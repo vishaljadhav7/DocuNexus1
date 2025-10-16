@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 class DocumentService:
     """Service layer for document operations"""
     
+    
     @staticmethod
     async def get_user_documents(user_id: str, db: AsyncSession) -> List[Document]:
 
@@ -60,7 +61,7 @@ class DocumentService:
         user_id: str, 
         document_id: str, 
         db: AsyncSession
-    ) -> Document:
+    ) -> DocumentListItem:   
         try:
             stmt = select(Document).where(
                 Document.user_id == user_id,
@@ -73,7 +74,17 @@ class DocumentService:
             if document is None:
                 raise DocumentNotFoundError(document_id=document_id)
             
-            return document
+            return DocumentListItem(
+                id = document.id,
+                filename=document.filename,
+                user_id=document.user_id,
+                file_size=document.file_size,
+                cloudinary_url=document.cloudinary_url,
+                cloudinary_public_id=document.cloudinary_public_id,
+                created_at=document.created_at,
+                updated_at=document.updated_at,
+                processing_status=document.processing_status
+            )
             
         except DocumentNotFoundError:
             raise
