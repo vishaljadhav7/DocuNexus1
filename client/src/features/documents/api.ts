@@ -2,7 +2,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import type {
   DocumentUploadResponse,
   DocumentListResponse,
-//   DocumentListItem,
+  DocumentListItem,
   DocumentDeleteResponse,
   DocumentStatusResponse
 } from './types';
@@ -14,8 +14,9 @@ export const api = createApi({
     baseUrl: import.meta.env.VITE_API_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).user.userInfo?.access_token;
+      console.log("prepareHeaders token => ", token?.slice(0,50))
       if (token) {
-        headers.set('Authorization', `Bearer ${token}`);
+        headers.set('Authorization', `bearer ${token}`);
       }
       return headers;
     },
@@ -26,9 +27,15 @@ export const api = createApi({
       query: () => '/documents',
       providesTags: ["Documents"],
     }),
-    getDocumentStatus: build.query<DocumentStatusResponse, string>({
+
+    getDocumentStatus: build.query<DocumentStatusResponse, string | undefined>({
       query: (document_id) => `/documents/${document_id}/status`
     }),
+
+    fetchDocument : build.query<DocumentListItem,  string | undefined>({
+      query: (document_id) => `/documents/${document_id}`,
+    }),
+
     uploadDocument: build.mutation<DocumentUploadResponse, FormData>({
       query: (formData) => ({
         url: '/documents',
@@ -37,6 +44,7 @@ export const api = createApi({
       }),
       invalidatesTags: ["Documents"],
     }),
+
     deleteDocument: build.mutation<DocumentDeleteResponse, string>({
       query: (document_id) => ({
         url: `/documents/${document_id}`,
@@ -51,5 +59,6 @@ export const {
   useFetchAllDocumentsQuery,
   useGetDocumentStatusQuery,
   useUploadDocumentMutation,
-  useDeleteDocumentMutation
+  useDeleteDocumentMutation,
+  useFetchDocumentQuery
 } = api;

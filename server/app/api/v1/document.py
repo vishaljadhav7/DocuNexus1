@@ -55,8 +55,8 @@ async def get_document_status(
 
     return DocumentStatusResponse(
         document_id=document.id,
-        status=document.processing_status,
-        error_message = document.error_message if document.processing_status == ProcessingStatus.FAILED.value else None
+        processing_status=document.processing_status,
+        error_message = 'Could not process the document' if document.processing_status == ProcessingStatus.FAILED.value else None
     )
 
 

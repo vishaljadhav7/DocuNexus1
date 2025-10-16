@@ -1,6 +1,6 @@
 import { createBrowserRouter } from "react-router-dom";
-import { HeroSection,  ProtectedRoute, RedirectRoute} from "@/app-components/index";
-import { Layout, SignIn, SignUp,  Dashboard } from "@/Pages/index";
+import { HeroSection,  Wrapper, RedirectRoute} from "@/app-components/index";
+import { Layout, SignIn, SignUp,  Dashboard, DocumentViewer, QueryInterface, UserProfile } from "@/Pages/index";
 import { RouterProvider } from "react-router-dom";
 
 export const AppRoutes = () => {
@@ -15,11 +15,19 @@ export const AppRoutes = () => {
                 },
                 {
                     path : "/dashboard",
-                    element : <ProtectedRoute> <Dashboard/> </ProtectedRoute>  
+                    element : <Wrapper> <Dashboard/> </Wrapper>  
                 },
                 {
                     path : "/document/:document_id",
-                    element : <></>
+                    element : <Wrapper> <DocumentViewer/></Wrapper> 
+                },
+                {
+                    path : "/document/:document_id/chat",
+                    element : <Wrapper> <QueryInterface/> </Wrapper> 
+                },
+                {
+                    path : "/user-profile",
+                    element : <Wrapper><UserProfile/></Wrapper>
                 }
             ]
         },

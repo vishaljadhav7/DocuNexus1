@@ -1,5 +1,5 @@
 from typing import Optional, Callable
-from fastapi import Request
+from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
@@ -17,7 +17,11 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
     async def dispatch(self, request : Request, call_next : Callable):
         """Process the request"""
-
+       
+        if request.method == "OPTIONS":
+            return Response(status_code=200)
+  
+     
         # Check if path requires authentication
         if not self._is_protected_path(request.url.path):
             return await call_next(request)
@@ -25,6 +29,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
         try:
             # Extract token from header
             authorization = request.headers.get("Authorization")
+            # print("authorization from middleware =>>>>> ", authorization)
             token = security_service.extract_token_from_header(authorization)
 
             user_id, jti = await auth_service.validate_access_token(token)

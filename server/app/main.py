@@ -78,6 +78,10 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+app.add_middleware(
+    AuthMiddleware,
+    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/documents"]
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -87,10 +91,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.add_middleware(
-    AuthMiddleware,
-    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/documents"]
-)
+
    
 
 

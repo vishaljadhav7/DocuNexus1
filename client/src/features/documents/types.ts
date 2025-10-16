@@ -26,7 +26,7 @@ export interface DocumentListResponse{
 
 export interface DocumentStatusResponse{
     document_id: string;
-    status : string;
+    processing_status : string;
     error_message? : string;
 }
 

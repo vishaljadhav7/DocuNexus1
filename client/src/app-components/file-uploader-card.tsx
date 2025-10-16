@@ -124,9 +124,7 @@ export function FileUploadCard() {
 
       const file_res = await uploadDocument(formData).unwrap();
       setProgress(100)
-      console.log("file_res =>>>>>> ", file_res)
-      
-      // router(`/document/${file_res.document_id}`)
+      router(`/document/${file_res.document_id}`)
       
     } catch (e: any) {
       setError(e?.message || "Upload failed. Please try again.")

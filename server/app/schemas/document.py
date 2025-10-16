@@ -22,7 +22,7 @@ class DocumentUploadResponse(BaseModel):
 class DocumentStatusResponse(BaseModel):
     """Response schema for document status check"""
     document_id: str
-    status: ProcessingStatus
+    processing_status: ProcessingStatus
     error_message: Optional[str] = None
     
 
