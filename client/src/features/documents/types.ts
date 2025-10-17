@@ -1,9 +1,9 @@
 // export  const ProcessingStatus = {
 //     UPLOADED: 'uploaded',
 //     PROCESSING: 'processing',
-//     COMPLETED: 'completed',
+//     COMPLETED: 'completed',   
 //     FAILED: 'failed'
-// } as const;
+// } as const;     
 
 
 export interface DocumentListItem{
@@ -15,6 +15,8 @@ export interface DocumentListItem{
     cloudinary_public_id : string;
     error_message? : string;
     processing_status : string;
+    insights_available : boolean;
+    insights? : JSON;
     created_at : Date;
     updated_at? : Date;
 }
@@ -37,6 +39,7 @@ export interface DocumentUploadResponse{
     processing_status: string
     created_at : Date;
     message : string;
+    insights_available : boolean;
 }
 
 export interface DocumentDeleteResponse{

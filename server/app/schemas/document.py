@@ -4,11 +4,10 @@ Pydantic schemas for document-related API operations
 from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional, List
-from enum import Enum
 from app.models.document import ProcessingStatus
 
 class DocumentUploadResponse(BaseModel):
-    """Response schema for document upload"""      
+    """Response schema for document upload"""
     model_config = ConfigDict(from_attributes=True)
     
     document_id: str
@@ -16,40 +15,58 @@ class DocumentUploadResponse(BaseModel):
     cloudinary_url: str
     processing_status: ProcessingStatus
     created_at: datetime
-    message : str
-    
-    
+    insights_available: bool
+    message: str
+
+
 class DocumentStatusResponse(BaseModel):
-    """Response schema for document status check"""
+    model_config = ConfigDict(from_attributes=True)
+    
     document_id: str
     processing_status: ProcessingStatus
     error_message: Optional[str] = None
-    
 
 class DocumentListItem(BaseModel):
-    """Schema for document in list view"""
     model_config = ConfigDict(from_attributes=True)
     
     id: str
     filename: str
-    user_id : str
+    user_id: str
     file_size: int
     cloudinary_url: str
-    cloudinary_public_id : str
-    # error_message : Optional[str]
+    cloudinary_public_id: str
     processing_status: ProcessingStatus
     created_at: datetime
-    updated_at : datetime
-    
+    updated_at: datetime
+    insights_available: bool
+    insights: Optional[dict] = None
+    error_message : Optional[str] = None
 
 
 class DocumentListResponse(BaseModel):
-    """Response schema for list of documents"""
+    model_config = ConfigDict(from_attributes=True)
+    
     documents: List[DocumentListItem]
     total: int
 
 
 class DocumentDeleteResponse(BaseModel):
-    """Response schema for document deletion"""
     message: str
     document_id: str
+
+
+class DocumentDetailResponse(BaseModel):
+    """Response schema for detailed document view"""
+    model_config = ConfigDict(from_attributes=True)
+    
+    id: str
+    filename: str
+    user_id: str
+    file_size: int
+    cloudinary_url: str
+    cloudinary_public_id: str
+    processing_status: ProcessingStatus
+    created_at: datetime
+    updated_at: datetime
+    insights_available: bool
+    insights: Optional[dict] = None

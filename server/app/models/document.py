@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import Optional, Dict, List
-from sqlalchemy import String, DateTime, Text, Enum as SQLEnum, Integer, ForeignKey
+from sqlalchemy import String, DateTime, Text, Enum as SQLEnum, Integer, ForeignKey, Boolean
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 from sqlalchemy.dialects.postgresql import JSONB
@@ -73,11 +73,24 @@ class Document(Base):
         init=False
     )
     
+    insights_available: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False
+    )
+    
+    insights: Mapped[Optional[dict]] = mapped_column(
+        JSONB,
+        nullable=True,
+        default=None
+    )
+    
     chunks: Mapped[List["DocumentChunk"]] = relationship(
         "DocumentChunk",
         back_populates="document",
         init=False,
-        lazy="noload" 
+        lazy="noload",
+        cascade="all, delete-orphan" 
     )
     user: Mapped["User"] = relationship(
         "User",
@@ -100,7 +113,7 @@ class DocumentChunk(Base):
     )
     document_id: Mapped[str] = mapped_column(
         String(36),
-        ForeignKey('documents.id'),
+        ForeignKey('documents.id', ondelete='CASCADE'),
         nullable=False,
         index=True
     )

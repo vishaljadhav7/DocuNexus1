@@ -42,7 +42,7 @@ const sidebarItems = [
   },
   {
     title: "User",
-    path: "/user-profile",
+    path: "/user",
     icon: UserCog,
   },
   {
@@ -57,7 +57,7 @@ export const AppSidebar = () => {
   const pathName = location.pathname;
   const dispatch = useAppDispatch();
   const router = useNavigate();
-  const userInfo = useAppSelector((store) => store.user.userInfo);
+  const user = useAppSelector((store) => store.user.userInfo);
   const { open } = useSidebar();
 
   const {data , isLoading} =  useFetchAllDocumentsQuery()
@@ -70,7 +70,7 @@ export const AppSidebar = () => {
         {
           withCredentials: true,
           headers : {
-            'Authorization': `Bearer ${userInfo?.access_token}`,
+            'Authorization': `Bearer ${user?.access_token}`,
           }
         }
       );
@@ -168,7 +168,7 @@ export const AppSidebar = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <SidebarMenuButton>
-                    <User2 /> {userInfo?.username}
+                    <User2 /> {user?.username}
                     <ChevronUp className="ml-auto" />
                   </SidebarMenuButton>
                 </DropdownMenuTrigger>

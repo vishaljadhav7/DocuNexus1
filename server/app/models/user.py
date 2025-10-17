@@ -1,6 +1,6 @@
 from typing import List
 from datetime import datetime
-from sqlalchemy import String, DateTime
+from sqlalchemy import String, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 import uuid
@@ -11,30 +11,37 @@ class User(Base):
     """User model"""
     __tablename__ = "users"
 
-    id : Mapped[str] = mapped_column(
-        String(255),
+    id: Mapped[str] = mapped_column(
+        String(36),
         primary_key=True,
-        default=lambda : str(uuid.uuid4()),
-        init=False  
+        default=lambda: str(uuid.uuid4()),
+        init=False
     )
 
     email: Mapped[str] = mapped_column(
-        String(255),
+        String(20),
         unique=True,
         index=True,
         nullable=False
     )
 
     username: Mapped[str] = mapped_column(
-        String(50),
+        String(20),
         unique=True,
         index=True,
         nullable=False
     )
 
     hashed_password: Mapped[str] = mapped_column(
-        String(255),
+        String(50),
         nullable=False
+    )
+    
+    credits: Mapped[int] = mapped_column(
+        Integer,      
+        default=20,
+        nullable=False,
+        init=False
     )
 
     created_at : Mapped[datetime] = mapped_column(
@@ -54,6 +61,7 @@ class User(Base):
         "Document",
         back_populates="user",
         lazy="noload", 
-        init=False
+        init=False,
+        cascade="all, delete-orphan"
     )
     

@@ -26,7 +26,7 @@ export const AppRoutes = () => {
                     element : <Wrapper> <QueryInterface/> </Wrapper> 
                 },
                 {
-                    path : "/user-profile",
+                    path : "/user",
                     element : <Wrapper><UserProfile/></Wrapper>
                 }
             ]

@@ -71,7 +71,9 @@ class DocumentProcessor:
                 filename=Path(file.filename).stem,
                 cloudinary_url=cloudinary_result['url'],
                 cloudinary_public_id=cloudinary_result['public_id'],
-                file_size=cloudinary_result['size']
+                file_size=cloudinary_result['size'],
+                insights=None,
+                insights_available=False
             )
             
             db.add(document)
@@ -90,6 +92,7 @@ class DocumentProcessor:
                 cloudinary_url=document.cloudinary_url,
                 processing_status= ProcessingStatus.PROCESSING.value,
                 created_at=document.created_at,
+                insights_available= document.insights,
                 message = "Document uploaded successfully. Processing in background."
             )
         except FileUploadError:

@@ -42,7 +42,9 @@ class DocumentService:
                             cloudinary_url=doc.cloudinary_url,
                             processing_status=ProcessingStatus(status_value),
                             created_at=doc.created_at,
-                            updated_at=doc.updated_at
+                            updated_at=doc.updated_at,
+                            insights=doc.insights,
+                            insights_available=doc.insights_available,
                         )
                     )
     
@@ -83,7 +85,9 @@ class DocumentService:
                 cloudinary_public_id=document.cloudinary_public_id,
                 created_at=document.created_at,
                 updated_at=document.updated_at,
-                processing_status=document.processing_status
+                processing_status=document.processing_status,
+                insights_available = document.insights_available,
+                insights=document.insights
             )
             
         except DocumentNotFoundError:

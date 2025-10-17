@@ -32,6 +32,7 @@ class UserResponse(UserBase):
     id : str
     created_at: datetime
     updated_at: Optional[datetime]
+    credits: int
     
     model_config = ConfigDict(from_attributes=True)
     
