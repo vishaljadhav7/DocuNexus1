@@ -4,7 +4,8 @@ import type {
   DocumentListResponse,
   DocumentListItem,
   DocumentDeleteResponse,
-  DocumentStatusResponse
+  DocumentStatusResponse,
+  Query
 } from './types';
 import type { RootState } from '@/app-store/store';
 
@@ -21,7 +22,7 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ["Documents"],
+  tagTypes: ["Documents", "Queries"],
   endpoints: (build) => ({
     fetchAllDocuments: build.query<DocumentListResponse, void>({
       query: () => '/documents',
@@ -51,7 +52,23 @@ export const api = createApi({
         method: 'DELETE'
       }),
       invalidatesTags: ["Documents"],
-    })
+    }),
+
+    fetchQueries : build.query<Query[], string | undefined>({
+      query : (document_id) =>  `/contracts/queries?document_id=${document_id}`,
+      providesTags: (result, error, document_id) => [
+        { type: "Queries" as const, id: document_id },
+      ],
+    }),
+    
+    queryDocument : build.mutation<Query, {query_text : string, document_id : string | undefined}>({
+      query : (queryRequest) => ({
+          url : "/contracts/queries",
+          method : "POST",
+          body : queryRequest,
+        }),
+      invalidatesTags: (result, error, arg) => [{ type: "Queries" as const, id: arg.document_id }],
+    }), 
   })
 });
 
@@ -60,5 +77,7 @@ export const {
   useGetDocumentStatusQuery,
   useUploadDocumentMutation,
   useDeleteDocumentMutation,
-  useFetchDocumentQuery
+  useFetchDocumentQuery,
+  useFetchQueriesQuery,
+  useQueryDocumentMutation
 } = api;

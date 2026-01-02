@@ -92,11 +92,20 @@ class Document(Base):
         lazy="noload",
         cascade="all, delete-orphan" 
     )
+    
     user: Mapped["User"] = relationship(
         "User",
         back_populates="my_docs",
         init=False,
         lazy="noload" 
+    )
+        
+    document_query : Mapped[List["QueryResponse"]] = relationship(
+        "QueryResponse",
+        back_populates="document",
+        init=False,
+        lazy="noload",
+        cascade="all, delete-orphan" 
     )
 
 

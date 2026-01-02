@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     chunk_overlap:int
     
     gemini_api_key : str
-    gemini_model : str = "gemini-2.5-flash"
+    gemini_model : str = "gemini-2.5-flash-lite"
     gemini_embedding_model: str = "models/text-embedding-004"
     
     pinecone_api_key : str
@@ -30,7 +30,9 @@ class Settings(BaseSettings):
     celery_broker_url : str
     celery_result_backend : str
     
-    model_config = SettingsConfigDict(env_file=".env")
+    class Config:
+        env_file = ".env"
+        extra = 'ignore'
 
 
 def get_settings() -> Settings:

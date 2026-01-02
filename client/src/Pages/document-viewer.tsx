@@ -73,7 +73,7 @@ export function DocumentViewer() {
     }
   };
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status : string | undefined) => {
     switch (status) {
       case "completed":
         return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800";

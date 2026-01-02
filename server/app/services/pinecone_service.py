@@ -104,7 +104,7 @@ class PineconeService:
                 }
                 for vec in vectors
             ]
-            
+          
             result = await self._index.upsert(vectors=all_vectors)
             
             logger.info(f"Upserted {result.upserted_count} vectors to Pinecone")
@@ -118,7 +118,9 @@ class PineconeService:
         self,
         query_vector: List[float],
         top_k: int = 5,
-        filter: Optional[Dict[str, Any]] = None
+        filter: Optional[Dict[str, Any]] = None,
+        include_metadata: bool = False, 
+        include_values: bool = False   
     ) -> List[Dict[str, Any]]:
         """Query similar vectors"""
         if not self._index:
@@ -128,14 +130,19 @@ class PineconeService:
             result = await self._index.query(
                 vector=query_vector,
                 top_k=top_k,
-                filter=filter
+                filter=filter,
+                include_values=include_values,
+                include_metadata=include_metadata,
             )
             
             matches = []
             for match in result.matches:
                 match_data = {
                     "id": match.id,
-                    "score": match.score
+                    "score": match.score,
+                    # Safely access metadata and values if they exist
+                    # "metadata": match.metadata if match.metadata else {},
+                    # "values": match.values if match.values else [] 
                 }
                 matches.append(match_data)
             
@@ -157,27 +164,3 @@ class PineconeService:
             logger.error(f"Pinecone delete failed: {str(e)}")
             raise VectorStoreError(f"Failed to delete vectors: {str(e)}")
 
-# # Usage example with async context manager
-# async def example_usage():
-#     async with PineconeService() as pinecone:
-#         # Service is automatically connected
-#         vectors = [
-#             {
-#                 "id": "vec1",
-#                 "values": [0.1] * 768,
-#                 "metadata": {"text": "example"}
-#             }
-#         ]
-        
-#         # Upsert vectors
-#         await pinecone.upsert_embeddings(vectors)
-        
-#         # Query similar vectors
-#         results = await pinecone.query_similar(
-#             query_vector=[0.1] * 768,
-#             top_k=5,
-#             include_metadata=True
-#         )
-        
-#         return results
-#     # Service is automatically disconnected here

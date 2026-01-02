@@ -3,9 +3,9 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.core.security import security_service
+from server.app.services.security_service import security_service
 from app.core.exceptions import InvalidTokenError, TokenBlacklistedError
-from app.services.auth import auth_service
+from server.app.services.auth_service import auth_service
 
 
 class AuthMiddleware(BaseHTTPMiddleware):

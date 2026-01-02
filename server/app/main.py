@@ -5,9 +5,12 @@ from app.database import engine, Base
 from app.redis_client import redis_client
 from app.config import Settings
 from app.api.v1.auth import router
-from app.middleware.auth import AuthMiddleware
+from server.app.middleware.auth_middleware import AuthMiddleware
 from app.api.v1.document import document_router
 from app.services.pinecone_service import PineconeService
+from app.api.v1.query import query_router
+
+from app.middleware.exception_handler_middleware import register_exception_handlers
 
 settings = Settings()
 
@@ -16,8 +19,6 @@ async def lifespan(app: FastAPI):
     """
     Lifespan context manager for startup and shutdown events
     """
-    print("Starting up...")
-    
     # Startup phase - initialize services in order
     try:
         # 1. Database
@@ -50,8 +51,6 @@ async def lifespan(app: FastAPI):
     yield
     
     # Shutdown phase - cleanup in reverse order
-    print("Shutting down...")
-
     try:
         # 3. Pinecone (last in, first out)
         if hasattr(app.state, 'pinecone_service'):
@@ -78,9 +77,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.add_middleware(
+register_exception_handlers(app) 
+
+
+app.add_middleware(    
     AuthMiddleware,
-    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/documents"]
+    protected_paths=["/api/v1/me", "/api/v1/sign_out", "/api/v1/documents", '/api/v1/contracts']
 )
 
 app.add_middleware(
@@ -90,9 +92,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-
-   
 
 
 @app.get("/", tags=["Root"])
@@ -105,10 +104,10 @@ async def root():
     }
     
     
-routers_to_include = [router, document_router]     
+app.include_router(router)
+app.include_router(document_router)
+app.include_router(query_router)
 
-for routes in routers_to_include:
-    app.include_router(routes)     
 
 if __name__ == "__main__": 
     import uvicorn

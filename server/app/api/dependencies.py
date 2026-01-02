@@ -4,12 +4,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.database import get_db
 from app.models.user import User
-from app.core.security import security_service
+from server.app.services.security_service import security_service
 from app.core.exceptions import (
     InvalidTokenError,
     UserNotFoundError
 )
-from app.services.auth import auth_service
+from server.app.services.auth_service import auth_service
 
 async def get_current_user_from_token(
         request : Request,

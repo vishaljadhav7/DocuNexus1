@@ -46,3 +46,11 @@ export interface DocumentDeleteResponse{
     document_id: string;
     message : string;
 }
+
+export interface Query{
+    id: string;
+    response_text: string;
+    query_text: string;
+    confidence_score? : number | undefined;
+    created_at: Date;
+}

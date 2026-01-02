@@ -33,7 +33,7 @@ class User(Base):
     )
 
     hashed_password: Mapped[str] = mapped_column(
-        String(50),
+        String(100),
         nullable=False
     )
     
@@ -54,7 +54,7 @@ class User(Base):
         DateTime(timezone=True),
         server_default=func.now(),
         onupdate=func.now(),
-        init=False
+        init=False      
     )
     
     my_docs: Mapped[List["Document"]] = relationship(
@@ -65,3 +65,10 @@ class User(Base):
         cascade="all, delete-orphan"
     )
     
+    query_responses : Mapped[List["QueryResponse"]] = relationship(
+        "QueryResponse",
+        back_populates="user",
+        lazy="noload",
+        init=False,
+        cascade="all, delete-orphan"
+    )

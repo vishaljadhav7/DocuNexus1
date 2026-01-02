@@ -38,7 +38,7 @@ class UnstructuredService:
         
         elements = partition_pdf(
             filename=pdf_path,
-            strategy="hi_res",  # High resolution for better extraction
+            strategy="fast",  # High resolution for better extraction
             extract_images_in_pdf=True,
             extract_image_block_types=["Image"],
             chunking_strategy="by_title",

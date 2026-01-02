@@ -31,7 +31,6 @@ class GeminiService:
         )
 
         self.output_parser = StrOutputParser()
-
         
         # Simple rate limiting variables
         self.last_request_time = 0
@@ -141,7 +140,7 @@ class GeminiService:
                 # Make the API call
                 response = await self.llm.ainvoke(message)
                 summary = self.output_parser.parse(response) 
-                # logger.info(f"✓ Generated summary for chunk {chunk_idx + 1}")
+                # logger.info(f" Generated summary for chunk {chunk_idx + 1}")
                 return summary.content
                 
             except Exception as e:
