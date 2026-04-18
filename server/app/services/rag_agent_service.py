@@ -3,7 +3,7 @@ import time
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config import get_settings
+from server.app.core.config import get_settings
 from app.models.query import QueryResponse
 from app.schemas.query import ChunkSummaryDTO
 from app.core.exceptions import ExternalServiceError, DatabaseError

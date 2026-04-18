@@ -2,14 +2,14 @@ from typing import Annotated, Optional
 from fastapi import Depends, Request, Cookie
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from app.database import get_db
+from app.core.database import get_db
 from app.models.user import User
-from server.app.services.security_service import security_service
+from app.services.security_service import security_service
 from app.core.exceptions import (
     InvalidTokenError,
     UserNotFoundError
 )
-from server.app.services.auth_service import auth_service
+from app.services.auth_service import auth_service
 
 async def get_current_user_from_token(
         request : Request,
@@ -39,7 +39,7 @@ async def get_current_user_from_token(
     user = result.scalar_one_or_none()
     
     if not user:
-        raise UserNotFoundError()
+        raise UserNotFoundError(resource_type="User", identifier=user_id)
     
     return user
 

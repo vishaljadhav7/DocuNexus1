@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Request, Response, status
 import logging
-from app.database import AsyncSessionDep
-from app.api.dependencies import CurrentUserDep
+from app.core.database import AsyncSessionDep
+from app.core.dependencies import CurrentUserDep
 from app.schemas.user import UserCreate, UserResponse, UserSignInResponse
 from app.schemas.auth import SignInRequest, MessageResponse
-from server.app.services.auth_service import auth_service
-from server.app.services.security_service import security_service
-from app.config import get_settings
+from app.services.auth_service import auth_service
+from app.services.security_service import security_service
+from app.core.config import get_settings
 from app.core.exceptions import InvalidTokenError
 
 logger = logging.getLogger(__name__)

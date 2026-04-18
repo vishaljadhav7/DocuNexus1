@@ -6,7 +6,7 @@ from app.services.pinecone_service import PineconeService
 from app.services.rag_agent_service import RAGAgentService
 from app.schemas.query import ChunkSummaryDTO, QueryResponseDTO
 from app.models.query import QueryResponse
-from app.database import AsyncSession
+from server.app.core.database import AsyncSession
 from app.core.exceptions import DocumentNotFoundError, EmbeddingError, VectorStoreError
 
 import logging

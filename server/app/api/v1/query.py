@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, Request, Query
-from app.database import AsyncSessionDep
-from app.api.dependencies import CurrentUserDep
+from app.core.database import AsyncSessionDep
+from app.core.dependencies import CurrentUserDep
 from app.services.query_service import QueryService
 from app.schemas.query import QueryResponseDTO, QueryRequest
 from typing import List

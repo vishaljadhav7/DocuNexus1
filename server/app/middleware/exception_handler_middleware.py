@@ -14,7 +14,9 @@ from app.core.exceptions import (
     ValidationError,
     DatabaseError,
     ExternalServiceError,
-    BusinessRuleViolationError,
+    CacheError,
+    RedisConnectionError,
+    RedisOperationError,
 )
 
 logger = logging.getLogger(__name__)
@@ -54,9 +56,11 @@ def map_exception_to_status_code(exc: DomainException) -> int:
         ResourceNotFoundError: status.HTTP_404_NOT_FOUND,
         ResourceAlreadyExistsError: status.HTTP_409_CONFLICT,
         ValidationError: status.HTTP_422_UNPROCESSABLE_ENTITY,
-        BusinessRuleViolationError: status.HTTP_400_BAD_REQUEST,
         DatabaseError: status.HTTP_500_INTERNAL_SERVER_ERROR,
         ExternalServiceError: status.HTTP_503_SERVICE_UNAVAILABLE,
+        CacheError: status.HTTP_503_SERVICE_UNAVAILABLE,
+        RedisConnectionError: status.HTTP_503_SERVICE_UNAVAILABLE,
+        RedisOperationError: status.HTTP_503_SERVICE_UNAVAILABLE,
     }
     
     # Check exception class hierarchy

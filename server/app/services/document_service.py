@@ -1,4 +1,4 @@
-from app.database import AsyncSession
+from server.app.core.database import AsyncSession
 from app.models.document import Document, ProcessingStatus
 from app.repositories.document_repository import DocumentRepository, DocumentChunkRepository
 from app.schemas.document import DocumentListResponse, DocumentListItem

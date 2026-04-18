@@ -4,7 +4,7 @@ from sqlalchemy import String, DateTime, Integer
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 import uuid
-from app.database import Base
+from app.core.database import Base
 
 
 class User(Base):

@@ -2,7 +2,7 @@
 
 from fastapi import UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.config import Settings
+from server.app.core.config import Settings
 from app.services.cloudinary_service import CloudinaryService
 from app.repositories.document_repository import DocumentRepository
 from pathlib import Path

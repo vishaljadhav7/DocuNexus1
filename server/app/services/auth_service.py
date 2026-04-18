@@ -9,12 +9,13 @@ from app.core.exceptions import (
     InvalidCredentialsError,           
     InvalidTokenError,
     ResourceNotFoundError,
-    CacheError
+    
 )
-from app.services.user import user_service
-from app.redis_client import redis_client, RedisOperationError
+
+from app.core.redis_client import redis_client
+from app.core.exceptions import CacheError, RedisOperationError
+
 import logging
-# from app.redis_client import RedisOperationError
 from app.repositories.user_repository import user_repository
 
 logger = logging.getLogger(__name__)

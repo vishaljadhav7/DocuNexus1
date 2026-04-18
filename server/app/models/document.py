@@ -7,7 +7,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 import uuid 
 import enum
 
-from app.database import Base
+from app.core.database import Base
 
 
 class ProcessingStatus(str, enum.Enum):

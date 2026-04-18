@@ -1,20 +1,12 @@
 from typing import Optional
 from redis.asyncio import Redis
-from app.config import get_settings
+from app.core.config import get_settings
 import logging
+from app.core.exceptions import RedisConnectionError, RedisOperationError
 
 settings = get_settings()
 
 logger = logging.getLogger(__name__)
-
-class RedisConnectionError(Exception):
-    """Redis connection error"""
-    pass
-
-
-class RedisOperationError(Exception):
-    """Redis operation error"""
-    pass
 
 class RedisClient:
     """Redis client for token blacklisting and caching"""

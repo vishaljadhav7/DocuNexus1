@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Optional
 from pinecone import PineconeAsyncio, ServerlessSpec
 import logging
-from app.config import Settings
+from server.app.core.config import Settings
 from app.core.exceptions import VectorStoreError
 
 logger = logging.getLogger(__name__)

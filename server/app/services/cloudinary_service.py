@@ -2,7 +2,7 @@ import asyncio
 import cloudinary
 import cloudinary.uploader
 from pathlib import Path
-from app.config import Settings
+from server.app.core.config import Settings
 from app.core.exceptions import CloudinaryError
 import aiofiles.tempfile
 import os

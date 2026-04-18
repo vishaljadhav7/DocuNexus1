@@ -4,7 +4,7 @@ from app.core.exceptions import RAGException
 from langchain_google_genai import  GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
-from app.config import Settings
+from server.app.core.config import Settings
 import logging
 import time
 import uuid

@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from app.database import engine, Base
-from app.redis_client import redis_client
-from app.config import Settings
+from app.core.database import engine, Base
+from app.core.redis_client import redis_client
+from app.core.config import Settings
 from app.api.v1.auth import router
-from server.app.middleware.auth_middleware import AuthMiddleware
+from app.middleware.auth_middleware import AuthMiddleware
 from app.api.v1.document import document_router
 from app.services.pinecone_service import PineconeService
 from app.api.v1.query import query_router

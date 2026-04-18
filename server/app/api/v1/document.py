@@ -1,10 +1,10 @@
 # app/api/v1/document.py
 
 from fastapi import APIRouter, UploadFile, File, status
-from app.database import AsyncSessionDep
+from app.core.database import AsyncSessionDep
 from app.services.document_processor import DocumentProcessor
 from app.services.document_service import DocumentService
-from app.api.dependencies import CurrentUserDep
+from app.core.dependencies import CurrentUserDep
 from app.schemas.document import (
     DocumentListResponse,
     DocumentUploadResponse,

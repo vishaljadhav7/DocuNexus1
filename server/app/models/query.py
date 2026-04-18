@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy import String, Text, DateTime, Float, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
-from app.database import Base
+from app.core.database import Base
 import uuid
 
 class QueryResponse(Base):

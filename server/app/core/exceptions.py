@@ -27,14 +27,6 @@ class InvalidTokenError(AuthenticationError):
             error_code="INVALID_TOKEN"
         )
 
-class TokenExpiredError(AuthenticationError):
-    def __init__(self):
-        super().__init__(
-            message="Token has expired",
-            error_code="TOKEN_EXPIRED"
-        )
-
-
 #  Authorization Exceptions 
 class AuthorizationError(DomainException):
     """User lacks permission"""
@@ -69,12 +61,7 @@ class ResourceAlreadyExistsError(DomainException):
 class DocumentNotFoundError(ResourceNotFoundError):
     def __init__(self, document_id: str):
         super().__init__("Document", document_id)
-        
-class DocumentAccessDeniedError(AuthorizationError):
-    """User doesn't own the document"""
-    def __init__(self, document_id: str, user_id: str):
-        super().__init__(resource="document")
-        self.details = {"document_id": document_id, "user_id": user_id}        
+            
 
 class DocumentProcessingError(DomainException):
     """Document processing failed"""
@@ -100,11 +87,44 @@ class ChunkNotFoundError(ResourceNotFoundError):
             f"embedding_ids: {embedding_ids}"
         )
 
+class UserNotFoundError(ResourceNotFoundError):
+    def __init__(self, user_id: str = None):
+        identifier = user_id if user_id else "unknown"
+        super().__init__("User", identifier)
+
 
 #  External Service Exceptions 
 class ExternalServiceError(DomainException):
     """External service failed"""
     pass
+
+# Cache/Redis Exceptions - Add these to exceptions.py
+
+class CacheError(ExternalServiceError):
+    """Cache operation failed (Redis)"""
+    def __init__(self, operation: str, details: str = None):
+        super().__init__(
+            message=f"Cache operation failed: {operation}",
+            error_code="CACHE_ERROR",
+            details={"operation": operation, "details": details}
+        )
+
+class RedisConnectionError(CacheError):
+    """Redis connection failed"""
+    def __init__(self, message: str):
+        super().__init__(
+            operation="connection",
+            details=message
+        )
+
+class RedisOperationError(CacheError):
+    """Redis operation failed"""
+    def __init__(self, operation: str, details: str = None):
+        super().__init__(
+            operation=operation,
+            details=details
+        )
+
 
 class VectorStoreError(ExternalServiceError):
     def __init__(self, operation: str, details: str = None):
@@ -164,16 +184,6 @@ class DatabaseError(DomainException):
         super().__init__(
             message=message,
             error_code="DATABASE_ERROR",
-            details={"operation": operation, "details": details}
+            details={"operation": operation, "details": details}     
         )
 
-
-#  Business Logic Exceptions 
-class BusinessRuleViolationError(DomainException):
-    """Business rule violated"""
-    def __init__(self, rule: str, details: dict = None):
-        super().__init__(
-            message=f"Business rule violation: {rule}",
-            error_code="BUSINESS_RULE_VIOLATION",
-            details=details
-        )
