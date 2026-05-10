@@ -12,6 +12,7 @@ from app.schemas.document import (
     DocumentListItem,
     DocumentDeleteResponse
 )
+from app.schemas.insights import ContractAnalysisResponse
 import logging
 
 logger = logging.getLogger(__name__)
@@ -130,3 +131,12 @@ async def delete_document(
         message=f"Document deleted successfully",
         document_id=document_id
     )
+    
+@document_router.post("/{document_id}/analyze", response_model=ContractAnalysisResponse)
+async def analyze_contract(
+    document_id: str,
+    user: CurrentUserDep,
+):
+    insights = await document_service.analyze_contract(document_id, user.id)
+    return ContractAnalysisResponse(document_id=document_id, insights=insights)
+     

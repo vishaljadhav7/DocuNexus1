@@ -1,9 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, delete, func
+from sqlalchemy import select, delete, func, update
 from typing import List, Optional
 from app.models.document import Document, DocumentChunk, ProcessingStatus
 from app.core.exceptions import DocumentNotFoundError, DatabaseError, ChunkNotFoundError
 import logging
+from sqlalchemy.exc import SQLAlchemyError
+
 
 logger = logging.getLogger(__name__)
 
@@ -168,6 +170,17 @@ class DocumentRepository:
             logger.error(f"Failed to verify ownership: {str(e)}")
             raise DatabaseError("verify document ownership", str(e))
 
+    async def save_insights(self, document_id: str, insights: dict) -> None:
+        try:
+            await self.db.execute(
+                update(Document)
+                .where(Document.id == document_id)
+                .values(insights=insights, insights_available=True)
+            )
+            await self.db.commit()
+        except SQLAlchemyError as e:
+            await self.db.rollback()
+            raise DatabaseError(f"Failed to save contract insights: {str(e)}")    
 
 class DocumentChunkRepository:
     """Handles database operations for document chunks"""
@@ -217,3 +230,11 @@ class DocumentChunkRepository:
         except Exception as e:
             logger.error(f"Failed to fetch chunks: {str(e)}")
             raise DatabaseError("fetch chunks by embedding IDs", str(e))
+        
+    async def get_chunk_summaries(self, document_id: str) -> list[str]:
+        result = await self.db.execute(
+            select(DocumentChunk.summary).where(DocumentChunk.document_id == document_id)
+        )
+        return list(result.scalars().all())
+ 
+    

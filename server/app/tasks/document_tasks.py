@@ -40,15 +40,15 @@ def process_document_task(self, document_id: str):
             db.commit()
             db.refresh(document)
             
-            # Step 1: Parse PDF (separate event loop)
+            # Parse PDF (separate event loop)
             unstructured_service = UnstructuredService()
             chunks_data = asyncio.run(unstructured_service.parse_pdf(document.cloudinary_url))
             
-            # Step 2: Summarize chunks (separate event loop)
+            # Summarize chunks (separate event loop)
             gemini_service = GeminiService()
             summarised_chunks = asyncio.run(gemini_service.summarize_chunks(chunks=chunks_data))
             
-            # Step 3: Prepare embeddings (sync)
+            # Prepare embeddings (sync)
             embedding_vectors = [
                 {
                     "embedding_id": chunk['embed_data']['embedding_id'],
@@ -57,7 +57,7 @@ def process_document_task(self, document_id: str):
                 for chunk in summarised_chunks
             ]
             
-            # Step 4: ALL Pinecone operations in ONE event loop
+            # ALL Pinecone operations in ONE event loop
             async def handle_pinecone():
                 """Execute all Pinecone operations in single async context"""
                 pinecone_service = PineconeService()
@@ -72,7 +72,7 @@ def process_document_task(self, document_id: str):
             pinecone_result = asyncio.run(handle_pinecone())
             logger.info(f"Upserted {pinecone_result['upserted_count']} embeddings to Pinecone")
             
-            # Step 5: Save chunks to DB (sync)
+            # Save chunks to DB (sync)
             chunks = []
             for data in summarised_chunks:
                 chunk = DocumentChunk(
@@ -88,7 +88,7 @@ def process_document_task(self, document_id: str):
             
             logger.info(f"Successfully saved {len(chunks)} chunks")
             
-            # Step 6: Update document status
+            # Update document status
             document.processing_status = ProcessingStatus.COMPLETED.value
             db.commit()
             

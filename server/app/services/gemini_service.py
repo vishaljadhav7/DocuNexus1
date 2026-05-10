@@ -1,6 +1,6 @@
 import asyncio
 from typing import List, Dict, Any
-from app.core.exceptions import RAGException
+from app.core.exceptions import RAGException, ExternalServiceError
 from langchain_google_genai import  GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
@@ -8,6 +8,8 @@ from server.app.core.config import Settings
 import logging
 import time
 import uuid
+import json
+from app.utils.prompts import get_contract_analysis_prompt
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -237,4 +239,18 @@ class GeminiService:
         logger.info(f"✓ Completed processing all {len(all_results)} chunks")
         return all_results
  
-  
+    async def generate_contract_insights(self, text: str) -> dict:
+        prompt = get_contract_analysis_prompt(text)
+        try:
+            response = await self.llm.ainvoke(prompt)
+            raw = response.content.strip()
+            if not raw:
+                raise ExternalServiceError("Gemini returned empty analysis response")
+            cleaned = raw.replace("```json", "").replace("```", "").strip()
+            return json.loads(cleaned)
+        except ExternalServiceError:
+            raise
+        except json.JSONDecodeError as e:
+            raise ExternalServiceError(f"Gemini returned malformed JSON: {str(e)}")
+        except Exception as e:
+            raise ExternalServiceError(f"Contract analysis generation failed: {str(e)}")

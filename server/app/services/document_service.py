@@ -1,10 +1,13 @@
 from server.app.core.database import AsyncSession
 from app.models.document import Document, ProcessingStatus
 from app.repositories.document_repository import DocumentRepository, DocumentChunkRepository
-from app.schemas.document import DocumentListResponse, DocumentListItem
+from app.schemas.document import DocumentListResponse, DocumentListItem,  ProcessingStatus
 from app.schemas.query import ChunkSummaryDTO
 from typing import List, Optional
 import logging
+from pydantic import ValidationError
+from app.schemas.insights import ContractInsights
+from app.core.exceptions import BadRequestError, ExternalServiceError
 
 logger = logging.getLogger(__name__)
    
@@ -136,3 +139,29 @@ class DocumentService:
     ) -> bool:
         """Verify user owns document"""
         return await self.document_repo.verify_ownership(user_id, document_id, db)
+    
+    async def analyze_contract(self, document_id: str, user_id: str) -> ContractInsights:
+        document = await self.document_repository.get_document_by_id(document_id, user_id)
+ 
+        if document.insights_available:
+            raise BadRequestError("Contract insights already generated for this document")
+ 
+        if document.processing_status != ProcessingStatus.COMPLETED:
+            raise BadRequestError("Document processing is not complete — summaries not available yet")
+ 
+        summaries = await self.document_repository.get_chunk_summaries(document_id)
+        if not summaries:
+            raise BadRequestError("No chunk summaries found for this document")
+ 
+        context = "\n\n".join(summaries)
+ 
+        raw_insights = await self.gemini_service.generate_contract_insights(context)
+ 
+        try:
+            insights = ContractInsights.model_validate(raw_insights)
+        except ValidationError as e:
+            raise ExternalServiceError(f"Gemini response failed schema validation: {str(e)}")
+ 
+        await self.document_repository.save_insights(document_id, insights.model_dump())
+ 
+        return insights

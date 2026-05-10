@@ -187,3 +187,5 @@ class DatabaseError(DomainException):
             details={"operation": operation, "details": details}     
         )
 
+class RAGException(DomainException):
+    pass
