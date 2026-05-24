@@ -1,4 +1,4 @@
-from server.app.core.database import AsyncSession
+from app.core.database import AsyncSession
 from app.models.document import Document, ProcessingStatus
 from app.repositories.document_repository import DocumentRepository, DocumentChunkRepository
 from app.schemas.document import DocumentListResponse, DocumentListItem,  ProcessingStatus
@@ -8,6 +8,7 @@ import logging
 from pydantic import ValidationError
 from app.schemas.insights import ContractInsights
 from app.core.exceptions import BadRequestError, ExternalServiceError
+from app.services.gemini_service import  GeminiService
 
 logger = logging.getLogger(__name__)
    
@@ -17,6 +18,7 @@ class DocumentService:
     def __init__(self):
         self.document_repo = DocumentRepository()
         self.chunk_repo = DocumentChunkRepository()
+        self.gemini_service = GeminiService()
     
     async def get_user_documents(
         self,
@@ -140,28 +142,33 @@ class DocumentService:
         """Verify user owns document"""
         return await self.document_repo.verify_ownership(user_id, document_id, db)
     
-    async def analyze_contract(self, document_id: str, user_id: str) -> ContractInsights:
-        document = await self.document_repository.get_document_by_id(document_id, user_id)
- 
-        if document.insights_available:
-            raise BadRequestError("Contract insights already generated for this document")
- 
-        if document.processing_status != ProcessingStatus.COMPLETED:
-            raise BadRequestError("Document processing is not complete — summaries not available yet")
- 
-        summaries = await self.document_repository.get_chunk_summaries(document_id)
-        if not summaries:
-            raise BadRequestError("No chunk summaries found for this document")
- 
-        context = "\n\n".join(summaries)
- 
-        raw_insights = await self.gemini_service.generate_contract_insights(context)
- 
+    async def analyze_contract(self, document_id: str, user_id: str, db: AsyncSession) -> ContractInsights:
         try:
-            insights = ContractInsights.model_validate(raw_insights)
-        except ValidationError as e:
-            raise ExternalServiceError(f"Gemini response failed schema validation: {str(e)}")
- 
-        await self.document_repository.save_insights(document_id, insights.model_dump())
- 
-        return insights
+            document = await self.document_repo.get_user_document(user_id, document_id, db)
+     
+            if document.insights_available:
+                raise BadRequestError("Contract insights already generated for this document")
+     
+            if document.processing_status != ProcessingStatus.COMPLETED:
+                raise BadRequestError("Document processing is not complete — summaries not available yet")
+     
+            summaries = await self.chunk_repo.get_chunk_summaries(document_id, db)
+            if not summaries:
+                raise BadRequestError("No chunk summaries found for this document")
+     
+            context = "\n\n".join(summaries)
+     
+            raw_insights = await self.gemini_service.generate_contract_insights(context)
+     
+            try:
+                insights = ContractInsights.model_validate(raw_insights)
+            except ValidationError as e:
+                raise ExternalServiceError(f"Gemini response failed schema validation: {str(e)}")
+     
+            await self.document_repo.save_insights(document_id, insights.model_dump(), db)
+     
+            return insights
+        except Exception as e:
+            import traceback
+            print("ANALYZE ERROR:", traceback.format_exc())
+            raise

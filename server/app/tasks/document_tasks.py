@@ -8,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from app.core.exceptions import DocumentProcessingError, VectorStoreError
 import logging
 import asyncio
-from server.app.core.config import Settings
+from app.core.config import Settings
 
 settings = Settings()
 logger = logging.getLogger(__name__)

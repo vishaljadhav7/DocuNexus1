@@ -159,6 +159,7 @@ class DocumentRepository:
         db: AsyncSession
     ) -> bool:
         """Check if user owns document"""
+        print("1. verify_ownership ")
         try:
             stmt = select(Document.id).where(
                 Document.id == document_id,
@@ -170,16 +171,16 @@ class DocumentRepository:
             logger.error(f"Failed to verify ownership: {str(e)}")
             raise DatabaseError("verify document ownership", str(e))
 
-    async def save_insights(self, document_id: str, insights: dict) -> None:
+    async def save_insights(self, document_id: str, insights: dict, db : AsyncSession) -> None:
         try:
-            await self.db.execute(
+            await db.execute(
                 update(Document)
                 .where(Document.id == document_id)
                 .values(insights=insights, insights_available=True)
             )
-            await self.db.commit()
+            await db.commit()
         except SQLAlchemyError as e:
-            await self.db.rollback()
+            await db.rollback()
             raise DatabaseError(f"Failed to save contract insights: {str(e)}")    
 
 class DocumentChunkRepository:
@@ -231,8 +232,8 @@ class DocumentChunkRepository:
             logger.error(f"Failed to fetch chunks: {str(e)}")
             raise DatabaseError("fetch chunks by embedding IDs", str(e))
         
-    async def get_chunk_summaries(self, document_id: str) -> list[str]:
-        result = await self.db.execute(
+    async def get_chunk_summaries(self, document_id: str,  db: AsyncSession) -> list[str]:
+        result = await db.execute(
             select(DocumentChunk.summary).where(DocumentChunk.document_id == document_id)
         )
         return list(result.scalars().all())

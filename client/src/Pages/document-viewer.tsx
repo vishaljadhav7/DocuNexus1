@@ -1,67 +1,88 @@
 import { useState, useEffect, useMemo } from "react";
-import { Loader2, FileText, CheckCircle2, Clock, Download, MessageSquare, Copy, Check } from "lucide-react";
+import { Loader2, FileText, CheckCircle2, Clock, Download, MessageSquare, Copy, Check, Sparkles, Eye, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { useFetchDocumentQuery } from "@/features/documents/api";
+import { useFetchDocumentQuery, useGenerateDocumentInsightsMutation, useDeleteDocumentMutation } from "@/features/documents/api";
 import { useAppSelector } from "@/app-store/hooks";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import type { DocumentStatusResponse } from "@/features/documents/types";
 import { Link } from "react-router-dom";
+import { InsightsModal } from "../app-components/insights-modal";
 
 export function DocumentViewer() {
-  const user = useAppSelector(store => store.user.userInfo)
-  const { document_id }  = useParams();
+  const navigate = useNavigate();
+  const user = useAppSelector(store => store.user.userInfo);
+  const { document_id } = useParams();
 
   const [documentStatus, setDocumentStatus] = useState<DocumentStatusResponse>({
-    processing_status : '',
-    document_id : '',
-    error_message: ''
+    processing_status: "",
+    document_id: "",
+    error_message: "",
   });
   const [isStatusLoading, setIsStatusLoading] = useState(false);
   const [copiedId, setCopiedId] = useState(false);
+  const [showInsights, setShowInsights] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
 
   const {
     data: document,
     isLoading: isDocLoading,
     refetch: refetchDoc,
-  } = useFetchDocumentQuery(document_id, { skip: !document_id })
+  } = useFetchDocumentQuery(document_id, { skip: !document_id });
 
-  const baseStatus = document?.processing_status
+  const [generateDocumentInsights] = useGenerateDocumentInsightsMutation();
+  const [deleteDocument, { isLoading: isDeleting }] = useDeleteDocumentMutation();
+
+  const handleDelete = async () => {
+    if (!document_id) return;
+    setDeleteError("");
+    try {
+      await deleteDocument(document_id).unwrap();
+      navigate("/dashboard");
+    } catch {
+      setDeleteError("Failed to delete. Please try again.");
+    }
+  };
+
+  const handleGenerateInsights = async () => {
+    if (!document_id) return;
+    setIsGenerating(true);
+    try {
+      await generateDocumentInsights(document_id).unwrap();
+      await refetchDoc();
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const baseStatus = document?.processing_status;
 
   const getDocumentStatus = async () => {
     setIsStatusLoading(true);
     try {
       const res = await axios.get(
-      `${import.meta.env.VITE_API_URL}/documents/${document_id}/status`,  
-       {
-        headers : {
-          'Authorization' : `Bearer ${user?.access_token}`
-        }
-       }
-      )
-      if(res.status >= 200){
-        setDocumentStatus(res.data)
-      }
+        `${import.meta.env.VITE_API_URL}/documents/${document_id}/status`,
+        { headers: { Authorization: `Bearer ${user?.access_token}` } }
+      );
+      if (res.status >= 200) setDocumentStatus(res.data);
     } catch (error) {
-      console.error(error)
-    }
-    finally {
+      console.error(error);
+    } finally {
       setIsStatusLoading(false);
     }
-  }
+  };
 
   const effectiveStatus = useMemo(
-    () =>
-      documentStatus?.processing_status 
-        ? documentStatus.processing_status
-        : baseStatus,
+    () => (documentStatus?.processing_status ? documentStatus.processing_status : baseStatus),
     [documentStatus?.processing_status, baseStatus]
   );
 
   useEffect(() => {
     if (effectiveStatus === "completed") {
-      refetchDoc()
-      return;
+      refetchDoc();
     }
   }, [effectiveStatus, refetchDoc]);
 
@@ -73,7 +94,7 @@ export function DocumentViewer() {
     }
   };
 
-  const getStatusColor = (status : string | undefined) => {
+  const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case "completed":
         return "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/50 dark:text-emerald-400 dark:border-emerald-800";
@@ -86,7 +107,7 @@ export function DocumentViewer() {
     }
   };
 
-  const getStatusIcon = (status : string | undefined) => {
+  const getStatusIcon = (status: string | undefined) => {
     switch (status) {
       case "completed":
         return <CheckCircle2 className="w-4 h-4" />;
@@ -105,7 +126,7 @@ export function DocumentViewer() {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
-  const formatDate = (dateString : Date) => {
+  const formatDate = (dateString: Date) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -125,7 +146,6 @@ export function DocumentViewer() {
           className="w-full max-w-xl"
         >
           <div className="bg-card rounded-2xl border border-border shadow-xl overflow-hidden">
-            {/* Header Skeleton */}
             <div className="p-8 border-b border-border">
               <div className="flex items-start gap-4 mb-6">
                 <div className="w-14 h-14 rounded-xl shimmer" />
@@ -136,8 +156,6 @@ export function DocumentViewer() {
               </div>
               <div className="h-8 shimmer rounded-full w-32" />
             </div>
-
-            {/* Content Skeleton */}
             <div className="p-8">
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="p-4 bg-muted rounded-xl border border-border">
@@ -149,13 +167,11 @@ export function DocumentViewer() {
                   <div className="h-4 shimmer rounded w-full" />
                 </div>
               </div>
-
               <div className="h-11 shimmer rounded-xl mb-6" />
               <div className="space-y-4">
                 <div className="h-5 shimmer rounded w-48 mx-auto" />
                 <div className="h-11 shimmer rounded-xl" />
               </div>
-
               <div className="mt-8 pt-6 border-t border-border">
                 <div className="h-3 shimmer rounded w-40 mx-auto" />
               </div>
@@ -178,7 +194,7 @@ export function DocumentViewer() {
           {/* Header Section */}
           <div className="p-8 border-b border-border bg-gradient-to-br from-transparent to-primary/5">
             <div className="flex items-start gap-4 mb-6">
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.1 }}
@@ -187,7 +203,7 @@ export function DocumentViewer() {
                 <FileText className="w-7 h-7 text-primary" />
               </motion.div>
               <div className="flex-1 min-w-0">
-                <motion.h1 
+                <motion.h1
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.15 }}
@@ -195,7 +211,7 @@ export function DocumentViewer() {
                 >
                   {document?.filename}
                 </motion.h1>
-                <motion.p 
+                <motion.p
                   initial={{ x: -20, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
@@ -204,19 +220,37 @@ export function DocumentViewer() {
                   {formatFileSize(document?.file_size)}
                 </motion.p>
               </div>
+
+              {/* Delete button */}
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.2 }}
+                onClick={handleDelete}
+                disabled={isDeleting}
+                title="Delete document"
+                className="p-2 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-start"
+              >
+                {isDeleting
+                  ? <Loader2 className="w-5 h-5 animate-spin" />
+                  : <Trash2 className="w-5 h-5" />
+                }
+              </motion.button>
             </div>
 
-            {/* Status Badge */}
-            <motion.div 
+            {/* Delete error */}
+            {deleteError && (
+              <p className="text-sm text-red-500 mb-3 font-medium">{deleteError}</p>
+            )}
+
+            <motion.div
               initial={{ y: 10, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.25 }}
               className="flex items-center gap-2"
             >
               <div
-                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-semibold shadow-sm ${getStatusColor(
-                  effectiveStatus
-                )}`}
+                className={`inline-flex items-center gap-2.5 px-4 py-2 rounded-full border text-sm font-semibold shadow-sm ${getStatusColor(effectiveStatus)}`}
               >
                 {getStatusIcon(effectiveStatus)}
                 <span className="capitalize tracking-wide">{effectiveStatus}</span>
@@ -226,8 +260,7 @@ export function DocumentViewer() {
 
           {/* Content Section */}
           <div className="p-8">
-            {/* Info Grid */}
-            <motion.div 
+            <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.3 }}
@@ -243,28 +276,21 @@ export function DocumentViewer() {
                   </p>
                   <button
                     onClick={copyToClipboard}
-                    className="copy-button p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-primary/10 text-muted-foreground hover:text-primary transition-colors"
                     title="Copy ID"
                   >
-                    {copiedId ? (
-                      <Check className="w-4 h-4 text-success" />
-                    ) : (
-                      <Copy className="w-4 h-4" />
-                    )}
+                    {copiedId ? <Check className="w-4 h-4 text-success" /> : <Copy className="w-4 h-4" />}
                   </button>
                 </div>
               </div>
               <div className="p-4 bg-muted/50 rounded-xl border border-border hover:border-primary/30 transition-all duration-200">
-                <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-2.5">
-                  Uploaded
-                </p>
+                <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-2.5">Uploaded</p>
                 <p className="text-sm text-foreground font-medium">
                   {document?.created_at ? formatDate(document.created_at) : "—"}
                 </p>
               </div>
             </motion.div>
 
-            {/* View Document Button */}
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -278,7 +304,6 @@ export function DocumentViewer() {
               </a>
             </motion.div>
 
-            {/* Action Section */}
             {effectiveStatus !== "completed" ? (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -287,7 +312,6 @@ export function DocumentViewer() {
                 className="space-y-4"
               >
                 <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground font-medium">
-                  {/* <Loader2 className="w-4 h-4 animate-spin text-primary" /> */}
                   <p>Processing your document...</p>
                 </div>
                 <button
@@ -319,19 +343,16 @@ export function DocumentViewer() {
                   <CheckCircle2 className="w-5 h-5" />
                   <p>Your document is ready!</p>
                 </div>
-
-                <Link to={`/document/${document_id}/chat`}>                
-                <button className="w-full px-5 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-xl group">
-                  <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                  Ask AI Questions
-                </button>
+                <Link to={`/document/${document_id}/chat`}>
+                  <button className="w-full px-5 py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-lg hover:shadow-xl group">
+                    <MessageSquare className="w-4 h-4 group-hover:scale-110 transition-transform" />
+                    Ask AI Questions
+                  </button>
                 </Link>
-
               </motion.div>
             )}
 
-            {/* Footer */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
@@ -343,7 +364,53 @@ export function DocumentViewer() {
             </motion.div>
           </div>
         </div>
+
+        {/* Insights Button — outside the card */}
+        {effectiveStatus === "completed" && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55 }}
+            className="mt-4"
+          >
+            {document?.insights_available ? (
+              <button
+                onClick={() => setShowInsights(true)}
+                className="w-full px-5 py-3 bg-amber-500 hover:bg-amber-400 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg"
+              >
+                <Eye className="w-4 h-4" />
+                View Insights
+              </button>
+            ) : (
+              <button
+                onClick={handleGenerateInsights}
+                disabled={isGenerating}
+                className="w-full px-5 py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2.5 shadow-md hover:shadow-lg disabled:shadow-none"
+              >
+                {isGenerating ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Generating...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="w-4 h-4" />
+                    Generate Insights
+                  </>
+                )}
+              </button>
+            )}
+          </motion.div>
+        )}
       </motion.div>
+
+      {/* Insights Modal */}
+      {showInsights && document?.insights && (
+        <InsightsModal
+          insights={document.insights}
+          onClose={() => setShowInsights(false)}
+        />
+      )}
     </div>
   );
 }

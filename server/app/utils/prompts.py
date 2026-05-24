@@ -8,7 +8,7 @@ Respond ONLY with a valid JSON object using this exact structure — no extra te
   "contract_type": "<type of contract e.g. Employment, NDA, Sales, Lease>",
   "overall_score": <integer 1-100, representing overall favorability>,
   "summary": "<comprehensive summary of the contract including key terms and conditions>",
-  "risks": [
+  "risks": [         
     {{"risk": "<risk title>", "risk_details": "<brief explanation>", "severity": "LOW|MEDIUM|HIGH"}}
   ],
   "opportunities": [

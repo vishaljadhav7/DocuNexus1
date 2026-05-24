@@ -15,7 +15,6 @@ export const api = createApi({
     baseUrl: import.meta.env.VITE_API_URL,
     prepareHeaders: (headers, { getState }) => {
       const token = (getState() as RootState).user.userInfo?.access_token;
-      console.log("prepareHeaders token => ", token?.slice(0,50))
       if (token) {
         headers.set('Authorization', `bearer ${token}`);
       }
@@ -31,6 +30,14 @@ export const api = createApi({
 
     getDocumentStatus: build.query<DocumentStatusResponse, string | undefined>({
       query: (document_id) => `/documents/${document_id}/status`
+    }),
+
+    
+    generateDocumentInsights : build.mutation<JSON, string | undefined>({
+      query : (document_id) => ({
+        url : `/documents/${document_id}/analyze`,
+        method : "POST"
+      })
     }),
 
     fetchDocument : build.query<DocumentListItem,  string | undefined>({
@@ -79,5 +86,6 @@ export const {
   useDeleteDocumentMutation,
   useFetchDocumentQuery,
   useFetchQueriesQuery,
-  useQueryDocumentMutation
+  useQueryDocumentMutation,
+  useGenerateDocumentInsightsMutation
 } = api;

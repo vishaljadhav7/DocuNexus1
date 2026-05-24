@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     chunk_overlap:int
     
     gemini_api_key : str
-    gemini_model : str = "gemini-2.5-flash-lite"
-    gemini_embedding_model: str = "models/text-embedding-004"
+    gemini_model : str = "gemini-3.1-flash-lite"
+    gemini_embedding_model: str = "gemini-embedding-2"
     
     pinecone_api_key : str
     pinecone_index_name : str

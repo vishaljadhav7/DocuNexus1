@@ -189,3 +189,6 @@ class DatabaseError(DomainException):
 
 class RAGException(DomainException):
     pass
+
+class BadRequestError(DomainException):
+    pass

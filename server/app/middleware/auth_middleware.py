@@ -3,9 +3,9 @@ from fastapi import Request, Response
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from server.app.services.security_service import security_service
-from app.core.exceptions import InvalidTokenError, TokenBlacklistedError
-from server.app.services.auth_service import auth_service
+from app.services.security_service import security_service
+from app.core.exceptions import InvalidTokenError
+from app.services.auth_service import auth_service
 
 
 class AuthMiddleware(BaseHTTPMiddleware):
@@ -39,7 +39,7 @@ class AuthMiddleware(BaseHTTPMiddleware):
 
             return await call_next(request)
         
-        except (InvalidTokenError, TokenBlacklistedError) as e:
+        except (InvalidTokenError) as e:
             return JSONResponse(
                 status_code=e.status_code,
                 content={"detail": e.detail},

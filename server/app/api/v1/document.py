@@ -1,5 +1,3 @@
-# app/api/v1/document.py
-
 from fastapi import APIRouter, UploadFile, File, status
 from app.core.database import AsyncSessionDep
 from app.services.document_processor import DocumentProcessor
@@ -22,7 +20,7 @@ document_service = DocumentService()
 
 document_router = APIRouter(prefix='/api/v1/documents', tags=["Document"])
 
-
+    
 @document_router.post(
     "/",
     response_model=DocumentUploadResponse,
@@ -136,7 +134,9 @@ async def delete_document(
 async def analyze_contract(
     document_id: str,
     user: CurrentUserDep,
+    db: AsyncSessionDep
 ):
-    insights = await document_service.analyze_contract(document_id, user.id)
+    
+    insights = await document_service.analyze_contract(document_id, user.id, db)
     return ContractAnalysisResponse(document_id=document_id, insights=insights)
      

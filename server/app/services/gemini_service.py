@@ -4,7 +4,7 @@ from app.core.exceptions import RAGException, ExternalServiceError
 from langchain_google_genai import  GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_core.messages import HumanMessage
 from langchain_core.output_parsers import StrOutputParser
-from server.app.core.config import Settings
+from app.core.config import Settings
 import logging
 import time
 import uuid
@@ -22,14 +22,14 @@ class GeminiService:
         self.llm = ChatGoogleGenerativeAI(
            model=self.settings.gemini_model,
            google_api_key=self.settings.gemini_api_key,
+        #    version="v1",
            temperature=0.3
         )
             
         self.embeddings = GoogleGenerativeAIEmbeddings(
-            model = self.settings.gemini_embedding_model,
+            model=self.settings.gemini_embedding_model, 
             google_api_key=self.settings.gemini_api_key,
-            temperature=0.3,
-            task_type="retrieval_document"
+            output_dimensionality=768
         )
 
         self.output_parser = StrOutputParser()
@@ -53,13 +53,24 @@ class GeminiService:
         
         self.last_request_time = time.time()  
            
-    async def generate_embedding(self, text: str) -> List[float]:
-        """Generate embedding for text"""
+    async def generate_embedding(self, text: Any) -> List[float]:
         try:
-            embedding = await self.embeddings.aembed_query(text)
+            # If 'text' is accidentally an object/AIMessage, this gets the raw string
+            if hasattr(text, 'content'):
+                clean_text = str(text.content).strip()
+            elif isinstance(text, dict):
+                clean_text = str(text.get('text', text)).strip()
+            else:
+                clean_text = str(text).strip()
+    
+            if not clean_text:
+                raise ExternalServiceError("Empty content provided for embedding")
+    
+            # Call the embedding model with the guaranteed clean string
+            embedding = await self.embeddings.aembed_query(clean_text)
             return embedding
         except Exception as e:
-            return []
+            raise ExternalServiceError(f"Embedding generation failed: {str(e)}")
     
     
     def create_simple_prompt(self, content: Dict[str, Any]) -> str:   
@@ -141,9 +152,9 @@ class GeminiService:
             try:
                 # Make the API call
                 response = await self.llm.ainvoke(message)
-                summary = self.output_parser.parse(response) 
-                # logger.info(f" Generated summary for chunk {chunk_idx + 1}")
-                return summary.content
+                if hasattr(response, 'content'):
+                    return str(response.content).strip()
+                return str(response).strip()
                 
             except Exception as e:
                 if attempt > max_retries:
@@ -243,7 +254,8 @@ class GeminiService:
         prompt = get_contract_analysis_prompt(text)
         try:
             response = await self.llm.ainvoke(prompt)
-            raw = response.content.strip()
+            raw = response.content if isinstance(response.content, str) else response.content[0]["text"]
+            raw = raw.strip()
             if not raw:
                 raise ExternalServiceError("Gemini returned empty analysis response")
             cleaned = raw.replace("```json", "").replace("```", "").strip()

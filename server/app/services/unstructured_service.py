@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 import aiohttp
 import aiofiles
 from pathlib import Path
-from server.app.core.config import Settings
+from app.core.config import Settings
 
 class UnstructuredService:
     

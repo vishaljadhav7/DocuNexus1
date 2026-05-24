@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models.user import User
 from app.schemas.auth import SignInRequest
 from app.schemas.user import UserCreate
-from server.app.services.security_service import security_service
+from app.services.security_service import security_service
 from app.core.exceptions import (
     InvalidCredentialsError,           
     InvalidTokenError,

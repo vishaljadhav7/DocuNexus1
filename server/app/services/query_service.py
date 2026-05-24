@@ -1,12 +1,12 @@
 from typing import List
-from app.repositories.document_repository import DocumentRepository
+from app.repositories.document_repository import DocumentRepository, DocumentChunkRepository
 from app.repositories.query_repository import QueryRepository
 from app.services.gemini_service import GeminiService
 from app.services.pinecone_service import PineconeService
 from app.services.rag_agent_service import RAGAgentService
 from app.schemas.query import ChunkSummaryDTO, QueryResponseDTO
 from app.models.query import QueryResponse
-from server.app.core.database import AsyncSession
+from app.core.database import AsyncSession
 from app.core.exceptions import DocumentNotFoundError, EmbeddingError, VectorStoreError
 
 import logging
@@ -21,6 +21,7 @@ class QueryService:
     def __init__(self):
         self.document_repo = DocumentRepository()
         self.gemini_service = GeminiService()
+        self.document_chunk_repo = DocumentChunkRepository()
         self.rag_service = RAGAgentService()
         self.query_repo = QueryRepository()
     
@@ -33,18 +34,22 @@ class QueryService:
         db: AsyncSession
     ) -> QueryResponse:
         """ Process a user query against a contract document """
+        logger.info("3. in process_contract_query")
         
         # Verify ownership
         await self._verify_ownership(user_id, document_id, db)
         
+        
         # Generate embedding
         query_embedding = await self._generate_embedding(query_text)
+           
         
         # Vector search
         embedding_ids = await self._search_similar_chunks(
             query_embedding,
             pinecone_service
         )
+        
         
         # Retrieve chunks
         chunk_summaries = await self._retrieve_chunk_summaries(
@@ -144,10 +149,11 @@ class QueryService:
         if not embedding_ids:
             return []
         
-        chunks = await self.document_repo.get_chunks_by_embedding_ids(
+        chunks = await self.document_chunk_repo.get_by_embedding_ids(
             embedding_ids=embedding_ids,
             db=db
         )
+        
         
         return [
             ChunkSummaryDTO(

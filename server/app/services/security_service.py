@@ -3,7 +3,7 @@ from typing import Optional, Dict, Any
 from passlib.context import CryptContext
 from jose import JWTError, jwt
 from app.core.exceptions import InvalidTokenError
-from server.app.core.config import get_settings
+from app.core.config import get_settings
 import uuid
 import logging
 

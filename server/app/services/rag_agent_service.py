@@ -3,7 +3,7 @@ import time
 from typing import List
 from langchain_google_genai import ChatGoogleGenerativeAI
 from sqlalchemy.ext.asyncio import AsyncSession
-from server.app.core.config import get_settings
+from app.core.config import get_settings
 from app.models.query import QueryResponse
 from app.schemas.query import ChunkSummaryDTO
 from app.core.exceptions import ExternalServiceError, DatabaseError
@@ -31,71 +31,41 @@ class RAGAgentService:
         self.query_repo = QueryRepository()
         try:
              self.llm = ChatGoogleGenerativeAI(
-                 model=self.settings.gemini_model,
-                 api_key=self.settings.gemini_api_key,
-                 temperature=0.2,
-                 top_p=0.8,
-                 top_k=40
-             )
+               model=self.settings.gemini_model,
+               google_api_key=self.settings.gemini_api_key,
+            #    version="v1",
+               temperature=0.3
+            )
         except Exception as e:
              logger.error(f"Failed to initialize RAG service: {str(e)}")
              raise RAGServiceError(
                  "Failed to initialize LLM",
                  details={"error": str(e)}
              )
-    
+
     def _create_agent_prompt(self, query: str, context: str) -> str:
-        return f"""You are a Contract Analysis AI specialized in extracting precise insights from legal documents.
-
-===== INPUT =====
-USER QUERY: {query}
-
-RETRIEVED CONTRACT SECTIONS:
-{context}
-
-===== YOUR TASK =====
-Analyze the provided contract sections and answer the user's query with precision and clarity.
-
-===== ANALYSIS FRAMEWORK =====
-
-1. DIRECT ANSWER (Required)
-   - Provide a clear, specific answer to the query in 1-2 sentences
-   - If the context doesn't contain the answer, state: "The provided sections don't address this query."
-
-2. SUPPORTING EVIDENCE (Required if answering)
-   - Reference specific sections/clauses that support your answer
-   - Quote critical phrases when necessary for accuracy
-   - Format: "Section X states that..."
-
-3. KEY INSIGHTS (Required if answering)
-   - Identify risks, obligations, or benefits relevant to the query
-   - Highlight ambiguous or concerning language
-   - Note any conflicting clauses
-
-4. PRACTICAL GUIDANCE (Optional but preferred)
-   - Provide actionable next steps if applicable
-   - Suggest what to clarify or negotiate if relevant
-
-===== OUTPUT REQUIREMENTS =====
-
-STRUCTURE:
-- Maximum 4-6 concise bullet points
-- Each bullet should be 1-2 sentences
-- Use plain language (no legal jargon unless explaining it)
-- Be specific, not generic
-
-TONE:
-- Professional yet accessible
-- Confident but not absolute (contracts have nuances)
-- Objective and unbiased
-
-CONSTRAINTS:
-- Base answers ONLY on the provided context
-- Do not invent or assume information not present
-- If uncertain, acknowledge limitations
-- Prioritize accuracy over completeness
-
-===== BEGIN ANALYSIS ====="""
+        return f"""You are a Contract Analysis AI. Answer queries about legal documents with precision and brevity.
+    
+    ===== INPUT =====
+    USER QUERY: {query}
+    CONTRACT SECTIONS: {context}
+    
+    ===== RULES =====
+    - Answer in 3-4 bullet points MAX
+    - Each bullet: 1 sentence only
+    - Cite only section references explicitly present in the context, do not fabricate clause numbers
+    - Flag risks or red flags with ⚠️
+    - If context lacks the answer: "Not addressed in provided sections."
+    - No filler, no repetition, no legal jargon unless explaining it
+    - Base answers ONLY on provided context
+    
+    ===== FORMAT =====
+    - [Direct answer]
+    - [Supporting clause reference]
+    - ⚠️ [Risk or concern, if any]
+    - [One actionable next step, if relevant]
+    
+    ===== BEGIN ====="""
     
     def _format_context(self, chunk_summaries: List[ChunkSummaryDTO]) -> str:
         if not chunk_summaries:
@@ -128,6 +98,7 @@ CONSTRAINTS:
         """
         Execute RAG query and save response.
         """
+        logger.info("1. In RAG service execute_query")
         start_time = time.time()
         
         try:
@@ -176,7 +147,11 @@ CONSTRAINTS:
         for attempt in range(max_retries):
             try:
                 response = await self.llm.ainvoke(prompt)
-                return response.content
+            
+                content = response.content
+                if isinstance(content, list):
+                    return content[0]["text"]
+                return content
                 
             except Exception as e:
                 error_msg = str(e).lower()

@@ -24,8 +24,9 @@ async def query_document(
     user: CurrentUserDep
 ) -> QueryResponseDTO:
     # Get Pinecone from app state
+    print("1. user from query -> ", user)
     pinecone_service : PineconeService = request.app.state.pinecone_service
-    
+    print("2. pinecone_service -> ", pinecone_service)
 
     query_response = await query_service.process_contract_query(
         query_text=payload.query_text,
