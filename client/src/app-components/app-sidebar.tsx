@@ -82,115 +82,117 @@ export const AppSidebar = () => {
   };
 
   return (
-    <Sidebar collapsible="icon" variant="floating">
-      <SidebarHeader>
-        <div className="flex items-center p-2">
-          {!open && (
-            <span className="text-xl font-bold text-purple-400 ">DN</span>
-          )}
-          {open && (
-            <span className="text-xl font-bold text-slate-900 ">DocuNexus</span>
-          )}
-        </div>
-      </SidebarHeader>
+ <Sidebar collapsible="icon" variant="floating">
+  <SidebarHeader>
+    <div className="flex items-center p-2">
+      {!open && (
+        <span className="text-xl font-bold text-purple-400 ">DN</span>
+      )}
+      {open && (
+        <span className="text-xl font-bold text-slate-900 ">DocuNexus</span>
+      )}
+    </div>
+  </SidebarHeader>
 
-      <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sidebarItems.map((item) => {
+  <SidebarContent>
+    <SidebarGroup>
+      <SidebarGroupLabel>Application</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {sidebarItems.map((item) => {
+            return (
+              <SidebarMenuItem key={item.path} className="list-none">
+                <SidebarMenuButton asChild>
+                  <Link
+                    className={
+                      pathName == item.path ? `bg-primary text-white` : ""
+                    }
+                    to={item.path}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
+        </SidebarMenu>
+      </SidebarGroupContent>
+    </SidebarGroup>
+
+    <SidebarGroup>
+      <SidebarGroupLabel>Projects</SidebarGroupLabel>
+      <SidebarGroupContent>
+        <SidebarMenu>
+          {isLoading ? (
+            <Loader2 className="animate-spin text-center ml-6" />
+          ) : (
+            <>
+              {data?.documents?.map((document) => {
                 return (
-                  <SidebarMenuItem key={item.path} className="list-none">
-                    <SidebarMenuButton asChild>
-                      <Link
-                        className={
-                          pathName == item.path ? `bg-primary text-white` : ""
-                        }
-                        to={item.path}
-                      >
-                        <item.icon />
-                        <span>{item.title}</span>
+                  <SidebarMenuItem key={document.id} className="list-none">
+                    <SidebarMenuButton>
+                      <Link to={`/document/${document.id}`} key={document.id}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "rounded-sm border size-6 flex items-center justify-center text-sm bg-white text-primary",
+                              {
+                                "bg-primary text-white":
+                                  `/document/${document.id}` === pathName,
+                              }
+                            )}
+                          >
+                            {document.filename.charAt(0).toUpperCase()}
+                          </div>
+                          <span>{document.filename}</span>
+                        </div>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 );
               })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+            </>
+          )}
+        </SidebarMenu>
+        <Button className="mt-3" size={"sm"} variant={"outline"}>
+          <Plus />
+          {open && "Create Project"}
+        </Button>
+      </SidebarGroupContent>
+    </SidebarGroup>
+  </SidebarContent>
 
-         <SidebarGroup>
-          <SidebarGroupLabel>Projects</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {isLoading ? (
-                <Loader2 className="animate-spin text-center ml-6" />
-              ) : (
-                <>
-                  {data?.documents?.map((document) => {
-                    return (
-                      <SidebarMenuItem key={document.id} className="list-none">
-                        <SidebarMenuButton>
-                          <Link to={`/document/${document.id}`} key={document.id}>
-                            <div className="flex items-center gap-2">
-                              <div
-                                className={cn(
-                                  "rounded-sm border size-6 flex items-center justify-center text-sm bg-white text-primary",
-                                  {
-                                    "bg-primary text-white":
-                                      `/document/${document.id}` === pathName,
-                                  }
-                                )}
-                              >
-                                {document.filename.charAt(0).toUpperCase()}
-                              </div>
-                              <span>{document.filename}</span>
-                            </div>
-                          </Link>
-                        </SidebarMenuButton>
-                      </SidebarMenuItem>
-                    );
-                  })}
-                </>
-              )}
-            </SidebarMenu>
-            <Button className="mt-3" size={"sm"} variant={"outline"}>
-              <Plus />
-              {open && "Create Project"}
-            </Button>
-          </SidebarGroupContent>
-        </SidebarGroup> 
+  <SidebarFooter className="mb-2 relative">
+    <SidebarMenu>
+      <SidebarMenuItem>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <SidebarMenuButton>
+              <User2 /> {user?.username}
+              <ChevronUp className="ml-auto" />
+            </SidebarMenuButton>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            side="top"
+            className="w-[220px] absolute bottom-2"
+          >
+            <Link to={"/billing"}>
+              <DropdownMenuItem>
+                <span>Billing</span>
+              </DropdownMenuItem>
+            </Link>
 
-        <SidebarFooter className="mb-2 relative">
-          <SidebarMenu>
-            <SidebarMenuItem>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <SidebarMenuButton>
-                    <User2 /> {user?.username}
-                    <ChevronUp className="ml-auto" />
-                  </SidebarMenuButton>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent
-                  side="top"
-                  className="w-[220px] absolute bottom-2"
-                >
-                  <Link to={"/billing"}>
-                    <DropdownMenuItem>
-                      <span>Billing</span>
-                    </DropdownMenuItem>
-                  </Link>
-
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <span>Sign out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </SidebarFooter>
-      </SidebarContent>
-    </Sidebar>
+            <DropdownMenuItem 
+             className=""
+            onClick={handleLogout}>
+              <span>Sign out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </SidebarMenuItem>
+    </SidebarMenu>
+  </SidebarFooter>
+</Sidebar>
   );
 };
