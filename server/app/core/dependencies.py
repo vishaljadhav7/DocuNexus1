@@ -10,9 +10,19 @@ from app.core.exceptions import (
     UserNotFoundError
 )
 from app.services.auth_service import auth_service
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+
+
+bearer_scheme = HTTPBearer(
+    auto_error=False,
+    bearerFormat="JWT",
+    description="Paste the access_token returned by /api/v1/sign_in",
+)
+
 
 async def get_current_user_from_token(
         request : Request,
+        credentials: Annotated[Optional[HTTPAuthorizationCredentials], Depends(bearer_scheme)],
         db : AsyncSession = Depends(get_db)
 ) -> User :
     """Get current user from access token in header"""
