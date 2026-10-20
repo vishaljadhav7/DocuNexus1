@@ -3,7 +3,7 @@ import logging
 from app.core.database import AsyncSessionDep
 from app.core.dependencies import CurrentUserDep
 from app.schemas.user import UserCreate, UserResponse, UserSignInResponse
-from app.schemas.auth import SignInRequest, MessageResponse
+from app.schemas.auth import SignInRequest, MessageResponse, TokenResponse
 from app.services.auth_service import auth_service
 from app.services.security_service import security_service
 from app.core.config import get_settings
@@ -95,7 +95,7 @@ async def sign_out(
 
 @router.post(
     "/refresh",
-    response_model=UserSignInResponse,
+    response_model=TokenResponse,
     summary="Refresh access token"
 )
 async def refresh_token(
@@ -125,10 +125,7 @@ async def refresh_token(
     )
     
     logger.info("Access token refreshed successfully")
-    return {
-        "access_token": new_access_token,
-        "expires_in": access_expires
-    }
+    return TokenResponse(access_token=new_access_token, expires_in=access_expires) 
 
 
 @router.get(

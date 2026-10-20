@@ -75,7 +75,8 @@ class RedisClient:
              return result > 0
         except Exception as e:
             logger.error(f"Failed to check token blacklist status: {e}")
-            # Fail secure - consider token blacklisted on Redis error
+            # Fail open on purpose: if Redis is down we don't lock every user out.
+            # A signed-out access token may work until it expires (max 15 minutes).
             return False
                
     async def store_refresh_token_jti(self, user_id: str, jti: str, ttl_seconds: int):
@@ -88,14 +89,14 @@ class RedisClient:
             logger.error(f"Failed to store refresh token: {e}")
             raise RedisOperationError(f"Failed to store refresh token: {e}")
         
-    async def get_refresh_token_jti(self, user_id: str) -> Optional[str]:
-        """Get refresh token for user"""
+    async def consume_refresh_token_jti(self, user_id: str) -> Optional[str]:
+        """Take the stored refresh jti out of Redis (read + delete in one step)"""
         try:
             key = f"{settings.redis_prefix}refresh:{user_id}"
-            return await self._redis.get(key)
+            return await self._redis.getdel(key)
         except Exception as e:
-            logger.error(f"Failed to get refresh token: {e}")
-            return None
+            logger.error(f"Failed to consume refresh token: {e}")
+            raise RedisOperationError(f"Failed to consume refresh token: {e}")
     
     async def delete_refresh_token_jti(self, user_id: str) -> bool:
         """Delete refresh token for user"""

@@ -11,7 +11,7 @@ from app.core.exceptions import (
     ResourceNotFoundError,
     
 )
-
+from datetime import datetime, timezone
 from app.core.redis_client import redis_client
 from app.core.exceptions import CacheError, RedisOperationError
 
@@ -70,28 +70,29 @@ class AuthService:
         return user, access_token, refresh_token, access_expires
     
     async def sign_out(self, user_id: str, access_token: str) -> None:
-        """ Sign out user - blacklist access token and delete refresh token """
-        # Decode and validate token
+        """ Sign out user - delete refresh token, then blacklist access token """
         token_data = security_service.decode_token(access_token, token_type="access")
-        remaining_ttl = token_data["exp"] - token_data["iat"]
-        
-        # Blacklist access token if not expired
-        if remaining_ttl > 0:
-            try:
-                await redis_client.blacklist_access_token_jti(
-                    jti=token_data["jti"], 
-                    ttl_seconds=remaining_ttl
-                )
-            except RedisOperationError as e:
-                logger.error(f"Failed to blacklist token for user {user_id}: {e}")
-                raise CacheError("blacklist_token")
-        
-        # Delete refresh token
+
+        # Remaining life of the access token (exp - now), not exp - iat
+        remaining_ttl = int(token_data["exp"] - datetime.now(timezone.utc).timestamp())
+
+        # Refresh record first: the 7-day credential must be gone even if step 2 fails
         try:
             await redis_client.delete_refresh_token_jti(user_id=user_id)
         except RedisOperationError as e:
             logger.error(f"Failed to delete refresh token for user {user_id}: {e}")
             raise CacheError("delete_refresh_token")
+
+        # Then blacklist the access token for the time it has left
+        if remaining_ttl > 0:
+            try:
+                await redis_client.blacklist_access_token_jti(
+                    jti=token_data["jti"],
+                    ttl_seconds=remaining_ttl
+                )
+            except RedisOperationError as e:
+                logger.error(f"Failed to blacklist token for user {user_id}: {e}")
+                raise CacheError("blacklist_token")
     
     async def refresh_access_token(
         self,
@@ -106,14 +107,21 @@ class AuthService:
         user_id = refresh_payload["sub"]
         current_refresh_jti = refresh_payload["jti"]
         
-        # Verify refresh token exists in Redis
+        # Take the stored jti out of Redis in the same step as reading it
         try:
-            stored_jti = await redis_client.get_refresh_token_jti(user_id)
-            if not stored_jti or stored_jti != current_refresh_jti:
-                raise InvalidTokenError("Refresh token has been revoked")
+            stored_jti = await redis_client.consume_refresh_token_jti(user_id)
         except RedisOperationError as e:
             logger.error(f"Failed to verify refresh token for user {user_id}: {e}")
             raise CacheError("verify_refresh_token")
+
+        if not stored_jti:
+            raise InvalidTokenError("Refresh token has been revoked")
+
+        if stored_jti != current_refresh_jti:
+            # Old or replayed token. The active record was just deleted above,
+            # so the user has to sign in again.
+            logger.warning(f"Refresh token reuse detected for user {user_id}")
+            raise InvalidTokenError("Refresh token has been revoked")
         
         # Verify user exists
         user = await user_repository.get_by_id(db, user_id)
